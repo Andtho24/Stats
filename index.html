@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Andtho_ · Twitch stats</title>
+<meta name="description" content="Andtho_'s Twitch channel history: records, most played games, top chatters and more. Updated every day.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Andtho_ · Twitch stats">
+<meta property="og:description" content="Andtho_'s Twitch channel history: records, most played games, top chatters and more. Updated every day.">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#060A15">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231F69FF'/%3E%3Cpath d='M9 23V15M16 23V9M23 23v-5' stroke='white' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme:dark;
+  --font-anthropic-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --page-bg:#070B16;
+  --color-fg:#E8EEF8;--color-fg-muted:#93A4BE;--color-panel:#0E1729;--color-border-line:rgba(148,178,220,.14);--color-bad:#F43F5E;
+  --cds-border:rgba(148,178,220,.14);--cds-chart-axis:#5D6E88;--cds-chart-grid:rgba(148,178,220,.10);--cds-chart-reference:#8EA0BA;
+  --cds-surface-popover:#16233B;--cds-shadow-popover:0 8px 24px #00000052,0 2px 6px #0003;--cds-text-secondary:#A9B8CF;
+  --cds-dur-slow:.45s;--cds-ease-out:cubic-bezier(.165,.84,.44,1);--cds-font-weight-medium:500;
+  --cds-font-size-caption:.75rem;--cds-font-size-body:.875rem;--cds-font-size-heading:.9375rem;--cds-font-size-title:1.375rem;
+  --cds-gap-xs:.5rem;--cds-gap-sm:.75rem;--cds-gap-md:1rem;--cds-gap-lg:1.75rem;--cds-gap-xl:2.5rem;
+  --cds-pad-xs:.375rem;--cds-pad-sm:.5rem;--cds-pad-md:.75rem;--cds-pad-lg:1rem;--cds-pad-xl:1.5rem;
+  --cds-radius:.5rem;
+  --sk-a:rgba(148,178,220,.07);--sk-b:rgba(148,178,220,.16);
+}
+@media (prefers-color-scheme:light){
+  :root{
+    color-scheme:light;
+    --page-bg:#F3F6FB;
+    --color-fg:#0F172A;--color-fg-muted:#5B6B82;--color-panel:#FFFFFF;--color-border-line:rgba(15,23,42,.10);
+    --cds-border:rgba(15,23,42,.10);--cds-chart-axis:#94A3B8;--cds-chart-grid:rgba(15,23,42,.07);--cds-chart-reference:#64748B;
+    --cds-surface-popover:#FFFFFF;--cds-shadow-popover:0 8px 24px #0000001f,0 2px 6px #00000014;--cds-text-secondary:#475569;
+    --sk-a:rgba(15,23,42,.05);--sk-b:rgba(15,23,42,.11);
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:var(--cds-font-size-body);line-height:1.5;
+  padding:clamp(16px,3vw,32px) 16px 40px}
+a{color:#40B0FF}
+.dash-skeleton{color:transparent!important;border-radius:6px;background:linear-gradient(90deg,var(--sk-a),var(--sk-b),var(--sk-a));background-size:200% 100%;
+  animation:dash-sk 1.3s ease-in-out infinite}
+.dash-skeleton *{visibility:hidden}
+@keyframes dash-sk{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.dash-skeleton{animation:none}}
+.ah-live{display:inline-flex;align-items:center;gap:.35rem;text-decoration:none;font-weight:600}
+.ah-live:hover{background:rgba(125,211,255,.24)}
+.ah-foot{color:var(--color-fg-muted);font-size:var(--cds-font-size-caption);text-align:center;padding-top:var(--cds-gap-md)}
+.ah-foot a{color:inherit;font-weight:600}
+</style>
+<script src="d3.min.js"></script>
+<script>
+(function () {
+  // Stand-in for the dashboard runtime: one data.json holds every table of the page.
+  var raw = {}, calcs = {}, cache = {}, state = 'loading', subs = [];
+  function done() { subs.forEach(function (cb) { try { cb(); } catch (e) { console.error(e); } }); }
+  window.dash = {
+    calc: function (name, spec) { calcs[name] = spec; },
+    data: function (id) {
+      if (state !== 'ok') return { status: state };
+      if (calcs[id]) {
+        if (!(id in cache)) {
+          try { cache[id] = calcs[id].fn.apply(null, calcs[id].inputs.map(function (i) { return raw[i] || []; })); }
+          catch (e) { console.error(e); cache[id] = null; }
+        }
+        return cache[id] == null ? { status: 'error' } : { status: 'ok', data: cache[id] };
+      }
+      return raw[id] == null ? { status: 'missing' } : { status: 'ok', data: raw[id] };
+    },
+    onData: function (cb) { subs.push(cb); if (state !== 'loading') { try { cb(); } catch (e) { console.error(e); } } },
+    setLink: function (name) { try { history.replaceState(null, '', '#' + name); } catch (e) {} },
+  };
+  fetch('data.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (j) { raw = j || {}; state = 'ok'; })
+    .catch(function (e) { console.error(e); state = 'error'; })
+    .then(function () { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', done); else done(); });
+})();
+</script>
+</head>
+<body>
+<style>
+@font-face{font-family:"AH Poppins";src:url(data:font/woff2;base64,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) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+/* Layout: navy brand banner on top, colourful pill tabs, then cards with one colour per kind of number. */
+.ah{
+  --c-blue:#1F69FF;--c-sky:#40B0FF;--c-ice:#7DD3FF;--c-violet:#8B5CF6;--c-pink:#EC4899;--c-amber:#F59E0B;
+  --c-green:#10B981;--c-cyan:#06B6D4;--c-red:#F43F5E;--c-gold:#F5B700;--c-silver:#A9B4C6;--c-bronze:#D08A4E;
+  --navy0:#060A15;--navy1:#0D1F3F;--hero-fg:#F2F8FF;--hero-muted:#A9C4E4;
+  --ah-display:"AH Poppins",var(--font-anthropic-sans);
+  max-width:1180px;margin-inline:auto;display:grid;gap:var(--cds-gap-lg);font-family:var(--font-anthropic-sans);color:var(--color-fg)}
+.ah *{box-sizing:border-box}
+.ah svg.ic{width:1.1em;height:1.1em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- banner */
+.ah-hero{position:relative;overflow:hidden;border-radius:calc(var(--cds-radius) * 2.5);padding:clamp(1.25rem,4vw,2.5rem);color:var(--hero-fg);
+  background:radial-gradient(ellipse 70% 90% at 95% 0%,rgba(64,176,255,.45),transparent 60%),radial-gradient(ellipse 55% 80% at 0% 100%,rgba(31,105,255,.35),transparent 65%),linear-gradient(140deg,var(--navy0),var(--navy1));
+  box-shadow:0 18px 40px -22px rgba(31,105,255,.55);display:grid;gap:var(--cds-gap-md)}
+.ah-hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 33% 12%,#fff,transparent 60%),radial-gradient(1px 1px at 58% 30%,#fff,transparent 60%),radial-gradient(1.5px 1.5px at 81% 62%,#fff,transparent 60%),radial-gradient(1px 1px at 91% 18%,#fff,transparent 60%),radial-gradient(1px 1px at 7% 70%,#fff,transparent 60%),radial-gradient(1px 1px at 46% 88%,#fff,transparent 60%),radial-gradient(1px 1px at 70% 8%,#fff,transparent 60%)}
+.ah-hero > *{position:relative;z-index:1}
+.ah-hero-top{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem}
+.ah-eyebrow{font-family:var(--ah-display);font-size:var(--cds-font-size-caption);letter-spacing:.18em;text-transform:uppercase;color:var(--c-ice)}
+.ah-chip-h{font-size:var(--cds-font-size-caption);padding:.2rem .65rem;border-radius:999px;background:rgba(125,211,255,.14);border:1px solid rgba(125,211,255,.3);color:var(--hero-fg)}
+.ah-title{font-family:var(--ah-display);font-weight:700;font-size:clamp(2.4rem,7vw,4.4rem);line-height:.95;letter-spacing:-.01em;margin:0;
+  background:linear-gradient(90deg,#FFFFFF 0%,var(--c-ice) 55%,var(--c-sky) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ah-take{margin:0;max-width:66ch;font-size:var(--cds-font-size-body);line-height:1.6;color:var(--hero-muted)}
+.ah .ah-take b{font-weight:600;color:var(--hero-fg)}
+.ah-hstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:var(--cds-gap-sm);margin-top:var(--cds-gap-xs)}
+.ah-hstat{border-radius:var(--cds-radius);padding:.7rem .9rem;background:rgba(255,255,255,.06);border:1px solid rgba(125,211,255,.18);backdrop-filter:blur(2px);min-width:0}
+.ah-hstat .k{display:flex;align-items:center;gap:.4rem;font-size:var(--cds-font-size-caption);color:var(--hero-muted)}
+.ah-hstat .k svg{color:var(--hc)}
+.ah-hstat .v{font-family:var(--ah-display);font-size:var(--cds-font-size-title);line-height:1.15;color:#fff;font-variant-numeric:tabular-nums;margin-top:.15rem}
+.ah-meta{margin:0;font-size:var(--cds-font-size-caption);color:var(--hero-muted)}
+
+/* ---------- tabs */
+.ah-tabs{display:flex;flex-wrap:wrap;gap:var(--cds-gap-xs);padding:.3rem;border-radius:999px;background:var(--color-panel);border:1px solid var(--color-border-line);width:fit-content;max-width:100%}
+.ah-tab{font:inherit;font-size:var(--cds-font-size-body);display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .95rem;border-radius:999px;border:0;background:transparent;color:var(--color-fg-muted);cursor:pointer;transition:background var(--cds-dur-slow) var(--cds-ease-out),color var(--cds-dur-slow)}
+.ah-tab:hover{color:var(--color-fg);background:color-mix(in srgb,var(--c-sky) 12%,transparent)}
+.ah-tab[aria-selected=true]{color:#fff;background:linear-gradient(135deg,var(--c-sky),var(--c-blue));box-shadow:0 6px 16px -8px rgba(31,105,255,.8)}
+.ah-tab:focus-visible,.ah-seg:focus-visible,.ah-link:focus-visible{outline:2px solid var(--c-sky);outline-offset:2px}
+
+/* ---------- building blocks */
+.ah-page{display:grid;gap:var(--cds-gap-xl)}
+.ah-sec{display:grid;gap:var(--cds-gap-md)}
+.ah-h2{display:flex;align-items:center;gap:.55rem;font-family:var(--ah-display);font-size:var(--cds-font-size-heading);margin:0;letter-spacing:.01em}
+.ah-h2 .bub,.ah-card h3 .bub{display:inline-grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:.6rem;color:#fff;background:var(--bc,var(--c-blue));flex:none}
+.ah-h2 .bub svg,.ah-card h3 .bub svg{width:1rem;height:1rem}
+.ah-sechead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--cds-gap-sm)}
+.ah-card{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:calc(var(--cds-radius) * 1.6);padding:var(--cds-pad-lg);display:grid;gap:var(--cds-gap-sm);align-content:start;min-width:0}
+.ah-card h3{display:flex;align-items:center;gap:.55rem;font-family:var(--ah-display);font-size:var(--cds-font-size-heading);font-weight:700;margin:0}
+.ah-note{margin:0;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);line-height:1.5}
+.ah-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:var(--cds-gap-md)}
+.ah-grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:var(--cds-gap-md)}
+.ah-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:var(--cds-gap-md)}
+.ah-tile{position:relative;overflow:hidden;border-radius:calc(var(--cds-radius) * 1.6);padding:var(--cds-pad-md) var(--cds-pad-lg);display:grid;gap:.3rem;align-content:start;min-width:0;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--tc) 16%,var(--color-panel)) 0%,var(--color-panel) 70%);border:1px solid color-mix(in srgb,var(--tc) 30%,var(--color-border-line))}
+.ah-tile .ico{width:2.1rem;height:2.1rem;border-radius:.7rem;display:grid;place-items:center;color:#fff;background:var(--tc);box-shadow:0 6px 14px -8px var(--tc);margin-bottom:.2rem}
+.ah-tile .ico svg{width:1.1rem;height:1.1rem}
+.ah-lab{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.ah-big{font-family:var(--ah-display);font-weight:700;font-size:var(--cds-font-size-title);line-height:1.12;font-variant-numeric:tabular-nums;min-height:1.1em;overflow-wrap:anywhere}
+.ah-sub{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ah-c-blue{--tc:var(--c-blue)}.ah-c-sky{--tc:var(--c-sky)}.ah-c-violet{--tc:var(--c-violet)}.ah-c-pink{--tc:var(--c-pink)}.ah-c-amber{--tc:var(--c-amber)}.ah-c-green{--tc:var(--c-green)}.ah-c-cyan{--tc:var(--c-cyan)}.ah-c-gold{--tc:var(--c-gold)}.ah-c-red{--tc:var(--c-red)}
+.ah-link{font:inherit;font-size:var(--cds-font-size-caption);display:inline-flex;align-items:center;gap:.3rem;background:color-mix(in srgb,var(--c-sky) 12%,transparent);border:1px solid color-mix(in srgb,var(--c-sky) 35%,transparent);border-radius:999px;padding:.25rem .7rem;color:var(--color-fg);cursor:pointer}
+.ah-link:hover{background:color-mix(in srgb,var(--c-sky) 22%,transparent)}
+.ah-bar{display:flex;flex-wrap:wrap;gap:var(--cds-gap-xs);align-items:center}
+.ah-seg{font:inherit;font-size:var(--cds-font-size-caption);display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .75rem;border:1px solid var(--color-border-line);border-radius:999px;background:transparent;color:var(--color-fg-muted);cursor:pointer}
+.ah-seg i{width:.55rem;height:.55rem;border-radius:50%;background:var(--sc,var(--c-sky));display:inline-block}
+.ah-seg:hover{color:var(--color-fg);border-color:color-mix(in srgb,var(--sc,var(--c-sky)) 50%,var(--color-border-line))}
+.ah-seg.is-on{color:#fff;background:var(--sc,var(--c-blue));border-color:var(--sc,var(--c-blue))}
+.ah-seg.is-on i{background:#fff}
+.ah-wrap{position:relative;min-width:0}
+.ah-chart{min-height:240px}
+.ah-chart.is-mini{min-height:200px}
+.ah-chart.is-heat{min-height:150px}
+.ah-chart.is-small{min-height:170px}
+.ah-chart svg{display:block;overflow:visible}
+.ah-tip{position:absolute;pointer-events:none;background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:var(--cds-radius);box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-xs) var(--cds-pad-sm);font-size:var(--cds-font-size-caption);white-space:nowrap;z-index:2;font-variant-numeric:tabular-nums}
+.ah-tip .ah-tip-k{color:var(--cds-text-secondary);display:block}
+.ah-tick{fill:var(--color-fg-muted);font-size:var(--cds-font-size-caption);font-family:var(--font-anthropic-sans)}
+.ah-ann{fill:var(--color-fg);font-size:var(--cds-font-size-caption);font-family:var(--ah-display);font-weight:700}
+
+/* ---------- highlights */
+.ah-hl{position:relative;overflow:hidden;display:grid;grid-template-columns:auto 1fr;gap:.25rem .9rem;align-items:center;min-width:0;padding:var(--cds-pad-md) var(--cds-pad-lg);border-radius:calc(var(--cds-radius) * 1.6);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 20%,var(--color-panel)),var(--color-panel) 75%);border:1px solid color-mix(in srgb,var(--tc) 32%,var(--color-border-line))}
+.ah-hl .ico{grid-row:span 3;width:2.6rem;height:2.6rem;border-radius:.85rem;display:grid;place-items:center;color:#fff;background:var(--tc);box-shadow:0 8px 18px -10px var(--tc)}
+.ah-hl .ico svg{width:1.3rem;height:1.3rem}
+.ah-hl > :not(.ico){min-width:0}
+
+/* ---------- tables */
+.ah-scroll{overflow-x:auto;max-width:100%}
+.ah-table{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--cds-font-size-body);font-variant-numeric:tabular-nums}
+.ah-table th{text-align:left;font-weight:var(--cds-font-weight-medium);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);padding:var(--cds-pad-xs) var(--cds-pad-sm);border-bottom:1px solid var(--color-border-line);white-space:nowrap}
+.ah-table td{padding:.5rem var(--cds-pad-sm);border-bottom:1px solid var(--color-border-line);vertical-align:middle}
+.ah-table tbody tr:hover td{background:color-mix(in srgb,var(--c-sky) 6%,transparent)}
+.ah-table tr:last-child td{border-bottom:0}
+.ah-table .num{text-align:right;white-space:nowrap}
+.ah-table th.num{text-align:right}
+.ah-table .ah-dim{color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)}
+.ah-table .yr{font-family:var(--ah-display);font-weight:700}
+.ah-cellbar{display:flex;align-items:center;gap:var(--cds-gap-sm);min-width:9rem}
+.ah-cellbar i{display:block;height:.6rem;border-radius:4px;min-width:2px;background:linear-gradient(90deg,var(--c-sky),var(--c-blue))}
+.ah-cellbar span{min-width:3.2rem;text-align:right}
+.ah-gchip{display:inline-flex;align-items:center;gap:.4rem;padding:.15rem .6rem;border-radius:999px;font-size:var(--cds-font-size-caption);white-space:nowrap;background:color-mix(in srgb,var(--gc) 16%,var(--color-panel));border:1px solid color-mix(in srgb,var(--gc) 35%,var(--color-border-line))}
+.ah-gchip::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--gc)}
+.ah-pill{display:inline-block;min-width:2.6rem;text-align:center;padding:.1rem .5rem;border-radius:999px;font-weight:600;background:color-mix(in srgb,var(--pc,var(--c-violet)) 16%,var(--color-panel));color:var(--color-fg)}
+
+/* ---------- bar lists */
+.ah-rows{display:grid;gap:.45rem;align-content:start}
+.ah-row{display:grid;grid-template-columns:1.9rem minmax(0,10rem) minmax(0,1fr) auto;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-body);min-height:1.7rem}
+.ah-row.no-rank{grid-template-columns:minmax(0,11rem) minmax(0,1fr) auto}
+.ah-rk{display:grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;font-size:var(--cds-font-size-caption);font-weight:600;color:var(--color-fg-muted);background:color-mix(in srgb,var(--color-fg) 6%,transparent);font-variant-numeric:tabular-nums}
+.ah-rk.r1{background:var(--c-gold);color:#3A2A00}.ah-rk.r2{background:var(--c-silver);color:#1B2230}.ah-rk.r3{background:var(--c-bronze);color:#2D1600}
+.ah-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ah-track{height:.65rem;position:relative;border-radius:999px;background:color-mix(in srgb,var(--rc,var(--c-sky)) 12%,transparent)}
+.ah-track i{position:absolute;inset:0 auto 0 0;border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb,var(--rc,var(--c-sky)) 70%,#fff),var(--rc,var(--c-sky)))}
+.ah-val{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.ah-val b{color:var(--color-fg);font-weight:600}
+
+/* ---------- podium */
+.ah-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--cds-gap-md);align-items:end}
+.ah-pod{border-radius:calc(var(--cds-radius) * 1.6);padding:var(--cds-pad-md);display:grid;gap:.3rem;justify-items:center;text-align:center;min-width:0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mc) 26%,var(--color-panel)),var(--color-panel));border:1px solid color-mix(in srgb,var(--mc) 45%,var(--color-border-line))}
+.ah-pod.p1{--mc:var(--c-gold);padding-block:var(--cds-pad-xl)}.ah-pod.p2{--mc:var(--c-silver)}.ah-pod.p3{--mc:var(--c-bronze)}
+.ah-medal{width:2.4rem;height:2.4rem;border-radius:50%;display:grid;place-items:center;font-family:var(--ah-display);font-weight:700;color:#fff;background:var(--mc);box-shadow:0 8px 18px -10px var(--mc)}
+.ah-pod.p1 .ah-medal{width:3rem;height:3rem}
+.ah-pod .ah-crown{color:var(--c-gold);height:1.4rem}
+.ah-pod .ah-crown svg{width:1.4rem;height:1.4rem}
+.ah-pod .ah-pname{font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ah-pod .ah-big{font-size:var(--cds-font-size-heading)}
+.ah-pod.p1 .ah-big{font-size:var(--cds-font-size-title)}
+
+/* ---------- emotes */
+.ah-emotes{display:flex;flex-wrap:wrap;gap:.5rem;min-height:4rem;align-content:flex-start}
+.ah-emote{display:inline-flex;align-items:baseline;gap:.45rem;border-radius:999px;padding:.35rem .8rem;max-width:100%;
+  background:color-mix(in srgb,var(--ec) 16%,var(--color-panel));border:1px solid color-mix(in srgb,var(--ec) 40%,var(--color-border-line))}
+.ah-emote b{font-weight:700;overflow-wrap:anywhere}
+.ah-emote span{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);font-variant-numeric:tabular-nums}
+.ah-emote.top{padding:.5rem 1rem}
+.ah-emote.top b{font-family:var(--ah-display);font-size:var(--cds-font-size-heading)}
+
+.ah a{color:inherit;text-decoration-color:color-mix(in srgb,var(--c-sky) 50%,transparent);text-underline-offset:2px}
+.ah a:hover{text-decoration-color:var(--c-sky)}
+.ah [data-dash-source-state=empty]{color:transparent}
+.ah [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
+.ah-fail{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:inherit;height:100%;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)}
+.ah-fail::before{content:"";width:.375rem;height:.375rem;border-radius:50%;background:var(--color-bad)}
+.ah-foot{border-top:1px solid var(--color-border-line);padding-top:var(--cds-pad-md)}
+@media (max-width:560px){.ah-row{grid-template-columns:1.7rem minmax(0,7rem) minmax(0,1fr) auto}.ah-row.no-rank{grid-template-columns:minmax(0,8rem) minmax(0,1fr) auto}.ah-hide-sm{display:none}.ah-podium{gap:var(--cds-gap-xs)}.ah-tabs{border-radius:calc(var(--cds-radius) * 1.6)}}
+@media (prefers-reduced-motion:no-preference){.ah-page:not([hidden]){animation:ah-in var(--cds-dur-slow) var(--cds-ease-out)}}
+@keyframes ah-in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="ah" id="ah">
+  <header class="ah-hero" id="top">
+    <div class="ah-hero-top"><span class="ah-eyebrow">Twitch channel history</span><a class="ah-chip-h ah-live" href="https://www.twitch.tv/andtho_" target="_blank" rel="noopener"><svg class="ic" data-icon="radio"></svg>twitch.tv/andtho_</a><span class="ah-chip-h">Updated <span class="dash-skeleton" data-source="channel" data-field="updated" data-row="0" data-fmt="date">—</span></span></div>
+    <h1 class="ah-title">Andtho_</h1>
+    <p class="ah-take" id="takeaway">Live <b class="dash-skeleton" data-source="channel" data-field="streams" data-row="0" data-fmt="n">—</b> times since <b class="dash-skeleton" data-source="channel" data-field="first_stream" data-row="0" data-fmt="date">—</b>, across <b class="dash-skeleton" data-source="channel" data-field="games_played" data-row="0" data-fmt="n">—</b> different games. The record is <b class="dash-skeleton" data-source="records" data-field="peak" data-where="id=peak-1" data-fmt="n">—</b> viewers at once on <b class="dash-skeleton" data-source="records" data-field="date" data-where="id=peak-1" data-fmt="date">—</b>, and chat has sent <b class="dash-skeleton" data-source="chat_totals" data-field="total_messages" data-row="0" data-fmt="n">—</b> messages.</p>
+    <div class="ah-hstats">
+      <div class="ah-hstat" style="--hc:var(--c-pink)"><div class="k"><svg class="ic" data-icon="heart"></svg>Followers</div><div class="v dash-skeleton" data-source="channel" data-field="followers" data-row="0" data-fmt="n">—</div></div>
+      <div class="ah-hstat" style="--hc:var(--c-sky)"><div class="k"><svg class="ic" data-icon="radio"></svg>Streams</div><div class="v dash-skeleton" data-source="channel" data-field="streams" data-row="0" data-fmt="n">—</div></div>
+      <div class="ah-hstat" style="--hc:var(--c-cyan)"><div class="k"><svg class="ic" data-icon="clock"></svg>Hours live</div><div class="v dash-skeleton" data-source="channel" data-field="hours_streamed" data-row="0" data-fmt="n">—</div></div>
+      <div class="ah-hstat" style="--hc:var(--c-amber)"><div class="k"><svg class="ic" data-icon="flame"></svg>Peak viewers</div><div class="v dash-skeleton" data-source="channel" data-field="peak_viewers" data-row="0" data-fmt="n">—</div></div>
+    </div>
+    <p class="ah-meta">Account created <span data-source="channel" data-field="created" data-row="0" data-fmt="date">—</span> · refreshed every day</p>
+  </header>
+
+  <nav class="ah-tabs" role="tablist" aria-label="Sections" id="ah-tabs">
+    <button class="ah-tab" role="tab" type="button" data-tab="overview" id="tab-overview"><svg class="ic" data-icon="sparkles"></svg>Overview</button>
+    <button class="ah-tab" role="tab" type="button" data-tab="history" id="tab-history"><svg class="ic" data-icon="history"></svg>History</button>
+    <button class="ah-tab" role="tab" type="button" data-tab="records" id="tab-records"><svg class="ic" data-icon="trophy"></svg>Records</button>
+    <button class="ah-tab" role="tab" type="button" data-tab="community" id="tab-community"><svg class="ic" data-icon="users"></svg>Community</button>
+    <button class="ah-tab" role="tab" type="button" data-tab="habits" id="tab-habits"><svg class="ic" data-icon="gamepad-2"></svg>Games &amp; habits</button>
+  </nav>
+
+  <!-- ===================================================== OVERVIEW -->
+  <section class="ah-page" id="overview" role="tabpanel" aria-labelledby="tab-overview">
+    <div class="ah-tiles" id="overview-tiles">
+      <div class="ah-tile ah-c-cyan"><div class="ico"><svg class="ic" data-icon="eye"></svg></div><div class="ah-lab">Hours watched by viewers</div><div class="ah-big dash-skeleton" data-source="channel" data-field="hours_watched" data-row="0" data-fmt="n">—</div><div class="ah-sub">on <span data-source="channel" data-field="stream_days" data-row="0" data-fmt="n">—</span> stream days</div></div>
+      <div class="ah-tile ah-c-violet"><div class="ico"><svg class="ic" data-icon="gamepad-2"></svg></div><div class="ah-lab">Different games</div><div class="ah-big dash-skeleton" data-source="channel" data-field="games_played" data-row="0" data-fmt="n">—</div><div class="ah-sub">most: <span data-source="games" data-field="game" data-where="rank=1" data-fmt="text">—</span></div></div>
+      <div class="ah-tile ah-c-pink"><div class="ico"><svg class="ic" data-icon="message-circle"></svg></div><div class="ah-lab">Chat messages</div><div class="ah-big dash-skeleton" data-source="chat_totals" data-field="total_messages" data-row="0" data-fmt="compact">—</div><div class="ah-sub">from <span data-source="chat_totals" data-field="unique_chatters" data-row="0" data-fmt="n">—</span> chatters</div></div>
+      <div class="ah-tile ah-c-green"><div class="ico"><svg class="ic" data-icon="radio"></svg></div><div class="ah-lab">Average viewers, last 30 days</div><div class="ah-big dash-skeleton" data-source="channel" data-field="last30_avg_viewers" data-row="0" data-fmt="n1">—</div><div class="ah-sub"><span data-source="channel" data-field="last30_new_followers" data-row="0" data-fmt="signed">—</span> followers · <span data-source="channel" data-field="last30_hours" data-row="0" data-fmt="n1">—</span> h live</div></div>
+    </div>
+
+    <div class="ah-card" id="career">
+      <div class="ah-sechead"><h3><span class="bub" style="--bc:var(--c-blue)"><svg class="ic" data-icon="history"></svg></span>Average viewers, month by month</h3><button class="ah-link" type="button" data-goto="history">Full history →</button></div>
+      <p class="ah-note">From the first stream in 2015 to today. The best month is marked in gold.</p>
+      <div class="ah-wrap"><div class="ah-chart is-mini dash-skeleton" id="career-chart" data-source="monthly"></div><div class="ah-tip" id="career-tip" hidden></div></div>
+    </div>
+
+    <div class="ah-sec" id="highlights">
+      <h2 class="ah-h2"><span class="bub" style="--bc:var(--c-amber)"><svg class="ic" data-icon="star"></svg></span>Highlights</h2>
+      <div class="ah-grid3">
+        <div class="ah-hl ah-c-amber"><div class="ico"><svg class="ic" data-icon="flame"></svg></div><div class="ah-lab">Biggest stream</div><div class="ah-big dash-skeleton" data-source="records" data-field="peak" data-where="id=peak-1" data-fmt="viewers">—</div><div class="ah-sub"><span data-source="records" data-field="date" data-where="id=peak-1" data-fmt="date">—</span> · <span data-source="records" data-field="games" data-where="id=peak-1" data-fmt="text">—</span></div></div>
+        <div class="ah-hl ah-c-blue"><div class="ico"><svg class="ic" data-icon="calendar-days"></svg></div><div class="ah-lab">Best month</div><div class="ah-big dash-skeleton" data-source="best_month" data-field="month" data-row="0" data-fmt="month">—</div><div class="ah-sub"><span data-source="best_month" data-field="avg" data-row="0" data-fmt="n">—</span> average viewers</div></div>
+        <div class="ah-hl ah-c-cyan"><div class="ico"><svg class="ic" data-icon="timer"></svg></div><div class="ah-lab">Longest stream</div><div class="ah-big dash-skeleton" data-source="records" data-field="hours" data-where="id=longest-1" data-fmt="hours">—</div><div class="ah-sub"><span data-source="records" data-field="date" data-where="id=longest-1" data-fmt="date">—</span></div></div>
+        <div class="ah-hl ah-c-green"><div class="ico"><svg class="ic" data-icon="zap"></svg></div><div class="ah-lab">Longest streak</div><div class="ah-big dash-skeleton" data-source="channel" data-field="streak_days" data-row="0" data-fmt="days">—</div><div class="ah-sub"><span data-source="channel" data-field="streak_from" data-row="0" data-fmt="date">—</span> – <span data-source="channel" data-field="streak_to" data-row="0" data-fmt="date">—</span></div></div>
+        <div class="ah-hl ah-c-pink"><div class="ico"><svg class="ic" data-icon="crown"></svg></div><div class="ah-lab">Number one chatter</div><div class="ah-big dash-skeleton" data-source="top_chatters" data-field="name" data-where="rank=1" data-fmt="text">—</div><div class="ah-sub"><span data-source="top_chatters" data-field="messages" data-where="rank=1" data-fmt="n">—</span> messages, all time</div></div>
+        <div class="ah-hl ah-c-violet"><div class="ico"><svg class="ic" data-icon="gamepad-2"></svg></div><div class="ah-lab">Most streamed game</div><div class="ah-big dash-skeleton" data-source="games" data-field="game" data-where="rank=1" data-fmt="text">—</div><div class="ah-sub"><span data-source="games" data-field="hours" data-where="rank=1" data-fmt="n">—</span> hours live</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== HISTORY -->
+  <section class="ah-page" id="history" role="tabpanel" aria-labelledby="tab-history" hidden>
+    <div class="ah-card" id="monthly">
+      <h3><span class="bub" style="--bc:var(--c-blue)"><svg class="ic" data-icon="history"></svg></span>The whole story, month by month</h3>
+      <p class="ah-note" id="monthly-note">Average viewers per month.</p>
+      <div class="ah-bar" id="metric-bar" role="group" aria-label="Choose a measure"></div>
+      <div class="ah-wrap"><div class="ah-chart dash-skeleton" id="monthly-chart" data-source="monthly"></div><div class="ah-tip" id="monthly-tip" hidden></div></div>
+    </div>
+    <div class="ah-card" id="follower-growth">
+      <h3><span class="bub" style="--bc:var(--c-pink)"><svg class="ic" data-icon="heart"></svg></span>Followers over time</h3>
+      <p class="ah-note">Running total of new followers each month, lined up so the last month matches today’s follower count. An estimate: early months before tracking are not included.</p>
+      <div class="ah-wrap"><div class="ah-chart is-mini dash-skeleton" id="followers-chart" data-source="followers_total"></div><div class="ah-tip" id="followers-tip" hidden></div></div>
+    </div>
+    <div class="ah-sec" id="years">
+      <h2 class="ah-h2"><span class="bub" style="--bc:var(--c-violet)"><svg class="ic" data-icon="calendar-days"></svg></span>Year by year</h2>
+      <div class="ah-card">
+        <div class="ah-scroll">
+          <table class="ah-table" id="year-table" data-source="yearly" data-row-key="year">
+            <thead><tr><th data-field="year">Year</th><th data-field="streams" class="num">Streams</th><th data-field="hours">Hours live</th><th data-field="avg" class="num">Avg viewers</th><th data-field="peak" class="num">Peak</th><th data-field="followers" class="num">Followers</th><th data-field="top_game">Most played</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="ah-card" id="calendar">
+      <h3><span class="bub" style="--bc:var(--c-cyan)"><svg class="ic" data-icon="calendar-days"></svg></span>Stream calendar</h3>
+      <div class="ah-bar" id="heat-years" role="group" aria-label="Choose a year"></div>
+      <p class="ah-note"><span data-source="yearly" data-field="days" data-where="year=2026" data-fmt="n" id="heat-days">—</span> stream days and <span data-source="yearly" data-field="hours" data-where="year=2026" data-fmt="n" id="heat-hours">—</span> hours live in <span data-source="yearly" data-field="year" data-where="year=2026" data-fmt="text" id="heat-year">—</span>. Darker blue means more hours that day.</p>
+      <div class="ah-wrap"><div class="ah-chart is-heat dash-skeleton" id="heat-chart" data-source="daily"></div><div class="ah-tip" id="heat-tip" hidden></div></div>
+    </div>
+  </section>
+
+  <!-- ===================================================== RECORDS -->
+  <section class="ah-page" id="records" role="tabpanel" aria-labelledby="tab-records" hidden>
+    <div class="ah-grid3">
+      <div class="ah-hl ah-c-amber"><div class="ico"><svg class="ic" data-icon="flame"></svg></div><div class="ah-lab">Most viewers at once</div><div class="ah-big dash-skeleton" data-source="records" data-field="peak" data-where="id=peak-1" data-fmt="n">—</div><div class="ah-sub"><span data-source="records" data-field="date" data-where="id=peak-1" data-fmt="date">—</span> · <span data-source="records" data-field="games" data-where="id=peak-1" data-fmt="text">—</span></div></div>
+      <div class="ah-hl ah-c-blue"><div class="ico"><svg class="ic" data-icon="users"></svg></div><div class="ah-lab">Best average in one stream</div><div class="ah-big dash-skeleton" data-source="records" data-field="avg" data-where="id=avg-1" data-fmt="n">—</div><div class="ah-sub"><span data-source="records" data-field="date" data-where="id=avg-1" data-fmt="date">—</span> · <span data-source="records" data-field="games" data-where="id=avg-1" data-fmt="text">—</span></div></div>
+      <div class="ah-hl ah-c-cyan"><div class="ico"><svg class="ic" data-icon="timer"></svg></div><div class="ah-lab">Longest stream</div><div class="ah-big dash-skeleton" data-source="records" data-field="hours" data-where="id=longest-1" data-fmt="hours">—</div><div class="ah-sub"><span data-source="records" data-field="date" data-where="id=longest-1" data-fmt="date">—</span> · <span data-source="records" data-field="games" data-where="id=longest-1" data-fmt="text">—</span></div></div>
+      <div class="ah-hl ah-c-pink"><div class="ico"><svg class="ic" data-icon="heart"></svg></div><div class="ah-lab">Most new followers in one stream</div><div class="ah-big dash-skeleton" data-source="records" data-field="followers" data-where="id=followers-1" data-fmt="signed">—</div><div class="ah-sub"><span data-source="records" data-field="date" data-where="id=followers-1" data-fmt="date">—</span> · <span data-source="records" data-field="games" data-where="id=followers-1" data-fmt="text">—</span></div></div>
+      <div class="ah-hl ah-c-violet"><div class="ico"><svg class="ic" data-icon="eye"></svg></div><div class="ah-lab">Most watched stream (hours watched)</div><div class="ah-big dash-skeleton" data-source="records" data-field="hours_watched" data-where="id=watched-1" data-fmt="n">—</div><div class="ah-sub"><span data-source="records" data-field="date" data-where="id=watched-1" data-fmt="date">—</span> · <span data-source="records" data-field="games" data-where="id=watched-1" data-fmt="text">—</span></div></div>
+      <div class="ah-hl ah-c-green"><div class="ico"><svg class="ic" data-icon="zap"></svg></div><div class="ah-lab">Most days in a row</div><div class="ah-big dash-skeleton" data-source="channel" data-field="streak_days" data-row="0" data-fmt="days">—</div><div class="ah-sub"><span data-source="channel" data-field="streak_from" data-row="0" data-fmt="date">—</span> – <span data-source="channel" data-field="streak_to" data-row="0" data-fmt="date">—</span></div></div>
+    </div>
+    <div class="ah-card" id="top-peaks">
+      <h3><span class="bub" style="--bc:var(--c-amber)"><svg class="ic" data-icon="trophy"></svg></span>The ten biggest peaks</h3>
+      <p class="ah-note">Big peaks usually come from raids. The average shows how many stayed.</p>
+      <div class="ah-scroll">
+        <table class="ah-table" id="peak-table" data-source="records" data-row-key="id">
+          <thead><tr><th data-field="date">Date</th><th data-field="peak" class="num">Peak</th><th data-field="avg" class="num">Average</th><th data-field="hours" class="num">Length</th><th data-field="games">Games</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="ah-card" id="marathons">
+      <h3><span class="bub" style="--bc:var(--c-cyan)"><svg class="ic" data-icon="timer"></svg></span>Marathon streams</h3>
+      <p class="ah-note">The longest streams on the channel.</p>
+      <div class="ah-scroll">
+        <table class="ah-table" id="long-table" data-source="records" data-row-key="id">
+          <thead><tr><th data-field="date">Date</th><th data-field="hours" class="num">Length</th><th data-field="avg" class="num">Average</th><th data-field="followers" class="num">New followers</th><th data-field="games">Games</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== COMMUNITY -->
+  <section class="ah-page" id="community" role="tabpanel" aria-labelledby="tab-community" hidden>
+    <div class="ah-tiles">
+      <div class="ah-tile ah-c-pink"><div class="ico"><svg class="ic" data-icon="message-circle"></svg></div><div class="ah-lab">Chat messages, all time</div><div class="ah-big dash-skeleton" data-source="chat_totals" data-field="total_messages" data-row="0" data-fmt="n">—</div><div class="ah-sub">counted by StreamElements</div></div>
+      <div class="ah-tile ah-c-violet"><div class="ico"><svg class="ic" data-icon="users"></svg></div><div class="ah-lab">Different chatters</div><div class="ah-big dash-skeleton" data-source="chat_totals" data-field="unique_chatters" data-row="0" data-fmt="n">—</div><div class="ah-sub">all time</div></div>
+      <div class="ah-tile ah-c-sky"><div class="ico"><svg class="ic" data-icon="smile"></svg></div><div class="ah-lab">Your own messages</div><div class="ah-big dash-skeleton" data-source="chat_totals" data-field="own_messages" data-row="0" data-fmt="n">—</div><div class="ah-sub">as andtho_ in chat</div></div>
+      <div class="ah-tile ah-c-green"><div class="ico"><svg class="ic" data-icon="calendar-days"></svg></div><div class="ah-lab">Messages this month</div><div class="ah-big dash-skeleton" data-source="month_totals" data-field="messages" data-row="0" data-fmt="n">—</div><div class="ah-sub"><span data-source="month_totals" data-field="chatters" data-row="0" data-fmt="n">—</span> chatters in <span data-source="month_totals" data-field="month" data-row="0" data-fmt="month">—</span></div></div>
+    </div>
+
+    <div class="ah-card" id="leaderboard">
+      <h3><span class="bub" style="--bc:var(--c-gold)"><svg class="ic" data-icon="crown"></svg></span>Top chatters of all time</h3>
+      <p class="ah-note">Messages per person since StreamElements started counting. Bots and your own messages are left out.</p>
+      <div class="ah-podium">
+        <div class="ah-pod p2"><div class="ah-medal">2</div><div class="ah-pname dash-skeleton" data-source="top_chatters" data-field="name" data-where="rank=2" data-fmt="text">—</div><div class="ah-big" data-source="top_chatters" data-field="messages" data-where="rank=2" data-fmt="n">—</div><div class="ah-sub">messages</div></div>
+        <div class="ah-pod p1"><div class="ah-crown"><svg class="ic" data-icon="crown"></svg></div><div class="ah-medal">1</div><div class="ah-pname dash-skeleton" data-source="top_chatters" data-field="name" data-where="rank=1" data-fmt="text">—</div><div class="ah-big" data-source="top_chatters" data-field="messages" data-where="rank=1" data-fmt="n">—</div><div class="ah-sub">messages</div></div>
+        <div class="ah-pod p3"><div class="ah-medal">3</div><div class="ah-pname dash-skeleton" data-source="top_chatters" data-field="name" data-where="rank=3" data-fmt="text">—</div><div class="ah-big" data-source="top_chatters" data-field="messages" data-where="rank=3" data-fmt="n">—</div><div class="ah-sub">messages</div></div>
+      </div>
+      <div class="ah-rows" id="chatters-list" data-source="top_chatters"></div>
+    </div>
+
+    <div class="ah-grid">
+      <div class="ah-card" id="month-chatters">
+        <h3><span class="bub" style="--bc:var(--c-green)"><svg class="ic" data-icon="message-circle"></svg></span>Most active this month</h3>
+        <p class="ah-note">Messages in <span data-source="month_totals" data-field="month" data-row="0" data-fmt="month">—</span>, counted by the companion.</p>
+        <div class="ah-rows" id="month-list" data-source="month_chat"></div>
+      </div>
+      <div class="ah-card" id="regulars">
+        <h3><span class="bub" style="--bc:var(--c-violet)"><svg class="ic" data-icon="award"></svg></span>Regulars lately</h3>
+        <p class="ah-note">Over the last <span data-source="month_totals" data-field="tracked_streams" data-row="0" data-fmt="n">—</span> streams: how many each person chatted in, their best run in a row, and how often they were first in chat.</p>
+        <div class="ah-scroll">
+          <table class="ah-table" id="loyal-table" data-source="loyalty" data-row-key="rank">
+            <thead><tr><th data-field="rank" class="num">#</th><th data-field="name">Viewer</th><th data-field="streams" class="num">Streams</th><th data-field="best_streak" class="num">Best run</th><th data-field="first_in_chat" class="num">First in chat</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="ah-grid">
+      <div class="ah-card" id="emotes-all">
+        <h3><span class="bub" style="--bc:var(--c-amber)"><svg class="ic" data-icon="smile"></svg></span>Most used emotes</h3>
+        <p class="ah-note">All time, Twitch, BTTV, FFZ and 7TV together.</p>
+        <div class="ah-emotes" id="emote-wall" data-source="emotes"></div>
+      </div>
+      <div class="ah-card" id="emotes-own">
+        <h3><span class="bub" style="--bc:var(--c-sky)"><svg class="ic" data-icon="heart"></svg></span>Your channel emotes</h3>
+        <p class="ah-note">How often chat used the andtho emotes.</p>
+        <div class="ah-rows" id="own-emotes" data-source="emotes"></div>
+      </div>
+    </div>
+
+    <div class="ah-card" id="commands">
+      <h3><span class="bub" style="--bc:var(--c-cyan)"><svg class="ic" data-icon="terminal"></svg></span>Favourite chat commands</h3>
+      <div class="ah-rows" id="command-list" data-source="commands"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================== HABITS -->
+  <section class="ah-page" id="habits" role="tabpanel" aria-labelledby="tab-habits" hidden>
+    <div class="ah-card" id="games">
+      <h3><span class="bub" style="--bc:var(--c-violet)"><svg class="ic" data-icon="gamepad-2"></svg></span>Most streamed games, all years</h3>
+      <p class="ah-note">Hours live per game. When a stream had several games the time is split evenly. The years show the first and last time.</p>
+      <div class="ah-rows" id="games-list" data-source="games"></div>
+    </div>
+
+    <div class="ah-sec" id="cs2">
+      <h2 class="ah-h2"><span class="bub" style="--bc:var(--c-red)"><svg class="ic" data-icon="flame"></svg></span>CS2 multikills</h2>
+      <p class="ah-note">Clipped automatically by the companion since <span data-source="cs2" data-field="since" data-where="id=k-3K" data-fmt="date">—</span>, in real matches only. Custom maps with bots, like Aim Rush, don’t count.</p>
+      <div class="ah-grid">
+        <div class="ah-tiles">
+          <div class="ah-tile ah-c-sky"><div class="ico"><svg class="ic" data-icon="zap"></svg></div><div class="ah-lab">3K</div><div class="ah-big dash-skeleton" data-source="cs2" data-field="count" data-where="id=k-3K" data-fmt="n">—</div></div>
+          <div class="ah-tile ah-c-violet"><div class="ico"><svg class="ic" data-icon="flame"></svg></div><div class="ah-lab">4K</div><div class="ah-big dash-skeleton" data-source="cs2" data-field="count" data-where="id=k-4K" data-fmt="n">—</div></div>
+          <div class="ah-tile ah-c-gold"><div class="ico"><svg class="ic" data-icon="crown"></svg></div><div class="ah-lab">ACE</div><div class="ah-big dash-skeleton" data-source="cs2" data-field="count" data-where="id=k-ACE" data-fmt="n">—</div></div>
+        </div>
+        <div class="ah-card">
+          <h3><span class="bub" style="--bc:var(--c-red)"><svg class="ic" data-icon="star"></svg></span>Maps with the most multikills</h3>
+          <div class="ah-rows" id="map-list" data-source="cs2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ah-grid">
+      <div class="ah-card" id="weekdays">
+        <h3><span class="bub" style="--bc:var(--c-blue)"><svg class="ic" data-icon="calendar-days"></svg></span>Hours live by weekday</h3>
+        <p class="ah-note">Every stream since 2015 added up. The busiest day is gold.</p>
+        <div class="ah-wrap"><div class="ah-chart is-small dash-skeleton" id="weekday-chart" data-source="rhythm"></div><div class="ah-tip" id="weekday-tip" hidden></div></div>
+      </div>
+      <div class="ah-card" id="start-times">
+        <h3><span class="bub" style="--bc:var(--c-cyan)"><svg class="ic" data-icon="clock"></svg></span>When streams start</h3>
+        <p class="ah-note">Streams started in each hour, Norway time. The most common hour is gold.</p>
+        <div class="ah-wrap"><div class="ah-chart is-small dash-skeleton" id="hour-chart" data-source="rhythm"></div><div class="ah-tip" id="hour-tip" hidden></div></div>
+      </div>
+    </div>
+
+    <div class="ah-card" id="clips">
+      <h3><span class="bub" style="--bc:var(--c-pink)"><svg class="ic" data-icon="eye"></svg></span>Most watched clips</h3>
+      <div class="ah-scroll">
+        <table class="ah-table" id="clip-table" data-source="clips" data-row-key="rank">
+          <thead><tr><th data-field="rank" class="num">#</th><th data-field="title">Clip</th><th data-field="by" class="ah-hide-sm">Clipped by</th><th data-field="views" class="num">Views</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ah-foot" id="about">
+    <p class="ah-note">About the numbers: streams up to Oct 20, 2026 come from SullyGnome, which samples viewers every few minutes, and newer streams are noted by the companion, so they can differ a little from Twitch’s own analytics. In the last 30 days: <b data-source="channel" data-field="last30_avg_viewers" data-row="0" data-fmt="n1">—</b> average viewers, <b data-source="channel" data-field="last30_new_followers" data-row="0" data-fmt="signed">—</b> followers and <b data-source="channel" data-field="last30_hours" data-row="0" data-fmt="n1">—</b> hours live. All-time chat is from StreamElements; this month’s chat and the regulars are counted by the companion. The page is refreshed once a day.</p>
+  </footer>
+  <footer class="ah-foot">Watch live Tue–Sun 18:00 CET on <a href="https://www.twitch.tv/andtho_" target="_blank" rel="noopener">twitch.tv/andtho_</a> · new numbers every day</footer>
+</div>
+
+<script>
+(function () {
+  const root = document.getElementById('ah');
+  const ICONS = {
+    radio: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+    heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+    crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+    'gamepad-2': '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
+    trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+    flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+    'calendar-days': '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+    'message-circle': '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+    smile: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>',
+    terminal: '<polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>',
+    timer: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+    zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+    history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+    award: '<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>',
+    star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  };
+  root.querySelectorAll('svg[data-icon]').forEach((s) => { s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true'); s.innerHTML = ICONS[s.dataset.icon] || ''; });
+
+  const C = { blue: '#1F69FF', sky: '#40B0FF', ice: '#7DD3FF', violet: '#8B5CF6', pink: '#EC4899', amber: '#F59E0B', green: '#10B981', cyan: '#06B6D4', red: '#F43F5E', gold: '#F5B700' };
+  const PALETTE = [C.sky, C.violet, C.pink, C.amber, C.green, C.cyan, C.blue, C.red, '#A3E635', '#FB923C'];
+  const gameColor = (name) => { let h = 0; for (const ch of String(name)) h = (h * 31 + ch.codePointAt(0)) >>> 0; return PALETTE[h % PALETTE.length]; };
+
+  const nf = new Intl.NumberFormat('en-US');
+  const nf1 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+  const nfc = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
+  const dayFmt = new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const monthFmt = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const monthShort = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const asDay = (s) => new Date(String(s).slice(0, 10) + 'T00:00:00Z');
+  const asMonth = (s) => new Date(String(s).slice(0, 7) + '-01T00:00:00Z');
+  const FMT = {
+    n: (v) => nf.format(Number(v)),
+    n1: (v) => nf1.format(Number(v)),
+    compact: (v) => nfc.format(Number(v)),
+    signed: (v) => (Number(v) > 0 ? '+' : '') + nf.format(Number(v)),
+    date: (v) => dayFmt.format(asDay(v)),
+    month: (v) => monthFmt.format(asMonth(v)),
+    hours: (v) => nf1.format(Number(v)) + ' h',
+    days: (v) => nf.format(Number(v)) + ' days',
+    viewers: (v) => nf.format(Number(v)) + ' viewers',
+    text: (v) => String(v),
+  };
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  dash.calc('best_month', {
+    inputs: ['monthly'],
+    title: 'Best month (average viewers)',
+    description: 'The month with the most average viewers.',
+    fn: (monthly) => [monthly.reduce((best, m) => (Number(m.avg) > Number(best.avg) ? m : best))],
+  });
+  dash.calc('followers_total', {
+    inputs: ['monthly', 'channel'],
+    title: 'Followers over time (estimate)',
+    description: 'Running total of monthly follower gains, shifted so the last month matches today’s follower count.',
+    fn: (monthly, channel) => {
+      const rows = monthly.slice().sort((a, b) => (a.month < b.month ? -1 : 1));
+      const total = rows.reduce((s, r) => s + Number(r.followers), 0);
+      const shift = Number(channel[0].followers) - total;
+      let run = 0;
+      return rows.map((r) => { run += Number(r.followers); return { month: r.month, followers: Math.max(0, run + shift) }; });
+    },
+  });
+
+  function rowFor(el, rows) {
+    if (el.dataset.row != null) return rows[Number(el.dataset.row)];
+    const w = el.dataset.where;
+    if (!w) return rows[0];
+    const conds = w.split('&').map((p) => p.split('=').map(decodeURIComponent));
+    return rows.find((r) => conds.every(([k, v]) => String(r[k]) === v));
+  }
+  function fillMarks() {
+    root.querySelectorAll('[data-fmt]').forEach((el) => {
+      const d = dash.data(el.dataset.source);
+      if (d.status !== 'ok') { if (d.status !== 'loading') el.classList.remove('dash-skeleton'); return; }
+      const rows = Array.isArray(d.data) ? d.data : [];
+      const r = rowFor(el, rows);
+      el.classList.remove('dash-skeleton');
+      if (!r || r[el.dataset.field] == null) { el.textContent = '—'; return; }
+      el.textContent = FMT[el.dataset.fmt](r[el.dataset.field]);
+    });
+  }
+  function failed(box, d) {
+    if (d.status === 'error' || d.status === 'connect' || d.status === 'declined' || d.status === 'missing') {
+      box.replaceChildren();
+      const f = document.createElement('div'); f.className = 'ah-fail'; f.textContent = 'Failed to load';
+      box.appendChild(f); box.classList.remove('dash-skeleton');
+      return true;
+    }
+    if (d.status !== 'ok') { box.replaceChildren(); box.classList.add('dash-skeleton'); return true; }
+    box.classList.remove('dash-skeleton');
+    return false;
+  }
+  function tipAt(tip, wrap, x, y, key, val) {
+    tip.replaceChildren();
+    const k = document.createElement('span'); k.className = 'ah-tip-k'; k.textContent = key;
+    const v = document.createElement('span'); v.textContent = val;
+    tip.append(k, v); tip.hidden = false;
+    const w = tip.offsetWidth, h = tip.offsetHeight, W = wrap.clientWidth;
+    tip.style.left = Math.max(0, Math.min(W - w, x - w / 2)) + 'px';
+    tip.style.top = Math.max(0, y - h - 10) + 'px';
+  }
+  function measure(svg, texts) {
+    const t = svg.append('text').attr('class', 'ah-tick');
+    let m = 0;
+    texts.forEach((s) => { t.text(s); m = Math.max(m, t.node().getComputedTextLength()); });
+    t.remove();
+    return m;
+  }
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  let gradN = 0;
+  function vGrad(svg, top, bottom) {
+    const id = 'ah-g' + (++gradN);
+    const g = svg.append('defs').append('linearGradient').attr('id', id).attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
+    g.append('stop').attr('offset', 0).style('stop-color', top);
+    g.append('stop').attr('offset', 1).style('stop-color', bottom);
+    return `url(#${id})`;
+  }
+
+  function barRows(box, items, opts) {
+    const max = d3.max(items, (r) => r.value) || 1;
+    box.replaceChildren(...items.map((r, i) => {
+      const row = el('div', 'ah-row' + (opts.rank ? '' : ' no-rank'));
+      if (opts.rank) row.appendChild(el('div', 'ah-rk' + (Number(r.rank) <= 3 ? ' r' + r.rank : ''), String(r.rank)));
+      const n = el('div', 'ah-nm', r.label); n.title = r.label; row.appendChild(n);
+      const tr = el('div', 'ah-track'); tr.style.setProperty('--rc', r.color || opts.color || C.sky);
+      const b = el('i'); b.style.width = (Math.max(0, r.value) / max * 100).toFixed(1) + '%'; tr.appendChild(b); row.appendChild(tr);
+      const v = el('div', 'ah-val'); v.appendChild(el('b', null, nf.format(r.value)));
+      if (r.extra) v.appendChild(document.createTextNode(' ' + r.extra));
+      row.appendChild(v);
+      return row;
+    }));
+  }
+
+  // ---------------------------------------------------------------- monthly bars (shared)
+  function monthBars(box, tip, rows, label, opts) {
+    const byMonth = new Map(rows.map((r) => [r.month, r.v]));
+    const first = asMonth(rows[0].month), last = asMonth(rows[rows.length - 1].month);
+    const months = d3.utcMonth.range(first, d3.utcMonth.offset(last, 1)).map((t) => t.toISOString().slice(0, 7));
+    const W = Math.max(280, box.clientWidth);
+    const H = opts.height(W);
+    box.replaceChildren();
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', label);
+    const fillUp = vGrad(svg, opts.c2, opts.c1), fillDown = vGrad(svg, C.red, C.red);
+    const vals = rows.map((r) => r.v);
+    const lo = Math.min(0, d3.min(vals)), hi = d3.max(vals) || 1;
+    const y0 = d3.scaleLinear([lo, hi * 1.15], [0, 1]).nice();
+    const ticks = y0.ticks(4);
+    const ml = Math.ceil(measure(svg, ticks.map((t) => nf.format(t)))) + 10, mr = 6, mt = 24, mb = 24;
+    const y = d3.scaleLinear(y0.domain(), [H - mb, mt]);
+    const x = d3.scaleBand(months, [ml, W - mr]).paddingInner(months.length > 80 ? 0.12 : 0.2);
+    svg.append('g').selectAll('line').data(ticks).join('line')
+      .attr('x1', ml).attr('x2', W - mr).attr('y1', (t) => y(t)).attr('y2', (t) => y(t))
+      .style('stroke', (t) => (t === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)')).attr('stroke-width', 1);
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('class', 'ah-tick')
+      .attr('x', ml - 8).attr('y', (t) => y(t)).attr('dy', '0.32em').attr('text-anchor', 'end').text((t) => nf.format(t));
+    const bw = x.bandwidth();
+    const best = rows.reduce((a, b) => (b.v > a.v ? b : a));
+    svg.append('g').selectAll('rect').data(rows.filter((r) => x(r.month) != null)).join('rect')
+      .attr('x', (r) => x(r.month)).attr('width', Math.max(1, bw))
+      .attr('y', (r) => y(Math.max(0, r.v))).attr('height', (r) => Math.max(r.v === 0 ? 0 : 1, Math.abs(y(r.v) - y(0))))
+      .attr('rx', bw > 6 ? 2 : 0).style('fill', (r) => (r === best ? C.gold : r.v < 0 ? fillDown : fillUp));
+    const step = W < 520 ? 3 : W < 860 ? 2 : 1;
+    const yearTicks = months.filter((mo) => mo.endsWith('-01') && Number(mo.slice(0, 4)) % step === 0);
+    svg.append('g').selectAll('text').data(yearTicks).join('text').attr('class', 'ah-tick')
+      .attr('x', (mo) => x(mo) + bw / 2).attr('y', H - 6).attr('text-anchor', 'middle').text((mo) => mo.slice(0, 4));
+    const bx = x(best.month) + bw / 2;
+    const ann = svg.append('text').attr('class', 'ah-ann').attr('y', y(best.v) - 8).text(nf.format(best.v) + ' · ' + monthShort.format(asMonth(best.month)));
+    const aw = ann.node().getComputedTextLength();
+    ann.attr('x', Math.max(ml, Math.min(W - mr - aw, bx - aw / 2)));
+    const hover = svg.append('rect').attr('y', mt).attr('width', Math.max(2, bw)).attr('height', H - mt - mb)
+      .style('fill', 'var(--cds-chart-reference)').style('opacity', 0).style('pointer-events', 'none');
+    svg.append('rect').attr('x', ml).attr('y', mt).attr('width', W - ml - mr).attr('height', H - mt - mb).style('fill', 'transparent')
+      .on('mousemove', (ev) => {
+        const [px] = d3.pointer(ev);
+        const i = Math.max(0, Math.min(months.length - 1, Math.floor((px - ml) / x.step())));
+        const mo = months[i];
+        const scale = box.clientWidth / W;
+        hover.attr('x', x(mo)).style('opacity', 0.25);
+        const v = byMonth.get(mo);
+        tipAt(tip, box.parentElement, (x(mo) + bw / 2) * scale, (v != null ? y(Math.max(0, v)) : y(0)) * scale,
+          monthFmt.format(asMonth(mo)), v != null ? label + ': ' + nf.format(v) : 'No streams');
+      })
+      .on('mouseleave', () => { tip.hidden = true; hover.style('opacity', 0); });
+  }
+  function monthlyRows(key) {
+    const d = dash.data('monthly');
+    return d.data.map((r) => ({ month: String(r.month).slice(0, 7), v: Number(r[key]) })).sort((a, b) => (a.month < b.month ? -1 : 1));
+  }
+  function drawCareer() {
+    const box = document.getElementById('career-chart');
+    const d = dash.data('monthly');
+    if (failed(box, d)) return;
+    const rows = monthlyRows('avg');
+    if (!rows.length) { box.replaceChildren(); return; }
+    monthBars(box, document.getElementById('career-tip'), rows, 'Average viewers', { c1: C.blue, c2: C.sky, height: (W) => Math.round(Math.max(200, Math.min(250, W * 0.3))) });
+  }
+
+  const METRICS = [
+    { k: 'avg', l: 'Average viewers', note: 'Average viewers per month', c1: C.blue, c2: C.sky },
+    { k: 'peak', l: 'Peak viewers', note: 'Most viewers at once in each month', c1: '#6D28D9', c2: C.violet },
+    { k: 'hours', l: 'Hours live', note: 'Hours streamed per month', c1: '#0E7490', c2: C.cyan },
+    { k: 'watched', l: 'Hours watched', note: 'Hours viewers spent watching, per month', c1: '#047857', c2: C.green },
+    { k: 'followers', l: 'New followers', note: 'New followers per month (red when more people unfollowed)', c1: '#BE185D', c2: C.pink },
+  ];
+  let metric = 'avg';
+  const metricBar = document.getElementById('metric-bar');
+  METRICS.forEach((m) => {
+    const b = el('button', 'ah-seg'); b.type = 'button'; b.dataset.k = m.k; b.style.setProperty('--sc', m.c2);
+    b.append(el('i'), document.createTextNode(m.l));
+    b.addEventListener('click', () => { metric = m.k; drawMonthly(); });
+    metricBar.appendChild(b);
+  });
+  function drawMonthly() {
+    const box = document.getElementById('monthly-chart');
+    const m = METRICS.find((x) => x.k === metric);
+    metricBar.querySelectorAll('button').forEach((b) => { const on = b.dataset.k === metric; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on); });
+    document.getElementById('monthly-note').textContent = m.note + ', from the first stream to today. The best month is gold; gaps are months without streams.';
+    const d = dash.data('monthly');
+    if (failed(box, d)) return;
+    const rows = monthlyRows(metric);
+    if (!rows.length) { box.replaceChildren(); return; }
+    monthBars(box, document.getElementById('monthly-tip'), rows, m.l, { c1: m.c1, c2: m.c2, height: (W) => Math.round(Math.max(220, Math.min(320, W * 0.4))) });
+  }
+
+  function drawFollowers() {
+    const box = document.getElementById('followers-chart');
+    const tip = document.getElementById('followers-tip');
+    const d = dash.data('followers_total');
+    if (failed(box, d)) return;
+    const rows = (d.data || []).map((r) => ({ t: asMonth(r.month), v: Number(r.followers) }));
+    if (!rows.length) { box.replaceChildren(); return; }
+    const W = Math.max(280, box.clientWidth), H = Math.round(Math.max(200, Math.min(250, W * 0.3)));
+    box.replaceChildren();
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Followers over time');
+    const y0 = d3.scaleLinear([0, (d3.max(rows, (r) => r.v) || 1) * 1.12], [0, 1]).nice();
+    const ticks = y0.ticks(4);
+    const ml = Math.ceil(measure(svg, ticks.map((t) => nf.format(t)))) + 10, mr = 10, mt = 24, mb = 24;
+    const x = d3.scaleUtc([rows[0].t, rows[rows.length - 1].t], [ml, W - mr]);
+    const y = d3.scaleLinear(y0.domain(), [H - mb, mt]);
+    const gid = 'ah-f' + (++gradN);
+    const g = svg.append('defs').append('linearGradient').attr('id', gid).attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 1);
+    [[0, 0.38], [0.3, 0.2], [0.65, 0.07], [1, 0]].forEach(([o, a]) => g.append('stop').attr('offset', o).style('stop-color', C.pink).style('stop-opacity', a));
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', ml).attr('x2', W - mr).attr('y1', (t) => y(t)).attr('y2', (t) => y(t))
+      .style('stroke', (t) => (t === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)'));
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('class', 'ah-tick').attr('x', ml - 8).attr('y', (t) => y(t)).attr('dy', '0.32em').attr('text-anchor', 'end').text((t) => nf.format(t));
+    const yearStep = W < 520 ? 3 : W < 860 ? 2 : 1;
+    const yrs = d3.utcYear.range(d3.utcYear.ceil(rows[0].t), rows[rows.length - 1].t).filter((t) => t.getUTCFullYear() % yearStep === 0);
+    svg.append('g').selectAll('text').data(yrs).join('text').attr('class', 'ah-tick').attr('x', (t) => x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text((t) => t.getUTCFullYear());
+    svg.append('path').datum(rows).attr('d', d3.area().x((r) => x(r.t)).y0(y(0)).y1((r) => y(r.v))).style('fill', `url(#${gid})`);
+    svg.append('path').datum(rows).attr('d', d3.line().x((r) => x(r.t)).y((r) => y(r.v))).style('fill', 'none').style('stroke', C.pink)
+      .attr('stroke-width', 2.5).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
+    const lastR = rows[rows.length - 1];
+    svg.append('circle').attr('cx', x(lastR.t)).attr('cy', y(lastR.v)).attr('r', 5).style('fill', C.pink).style('stroke', 'var(--color-panel)').attr('stroke-width', 2);
+    const lab = svg.append('text').attr('class', 'ah-ann').attr('y', y(lastR.v) - 12).text(nf.format(lastR.v));
+    const lw = lab.node().getComputedTextLength();
+    lab.attr('x', Math.min(W - mr - lw, x(lastR.t) - lw / 2));
+    const dot = svg.append('circle').attr('r', 4.5).style('fill', C.pink).style('opacity', 0);
+    const bis = d3.bisector((r) => r.t).center;
+    svg.append('rect').attr('x', ml).attr('y', mt).attr('width', W - ml - mr).attr('height', H - mt - mb).style('fill', 'transparent')
+      .on('mousemove', (ev) => {
+        const [px] = d3.pointer(ev);
+        const r = rows[bis(rows, x.invert(px))];
+        const scale = box.clientWidth / W;
+        dot.attr('cx', x(r.t)).attr('cy', y(r.v)).style('opacity', 1);
+        tipAt(tip, box.parentElement, x(r.t) * scale, y(r.v) * scale, monthFmt.format(r.t), nf.format(r.v) + ' followers');
+      })
+      .on('mouseleave', () => { tip.hidden = true; dot.style('opacity', 0); });
+  }
+
+  function drawYears() {
+    const tbody = document.querySelector('#year-table tbody');
+    const d = dash.data('yearly');
+    if (d.status !== 'ok') { tbody.replaceChildren(); return; }
+    const rows = d.data.slice().sort((a, b) => Number(b.year) - Number(a.year));
+    const maxH = d3.max(rows, (r) => Number(r.hours)) || 1;
+    const maxP = d3.max(rows, (r) => Number(r.peak)) || 1;
+    tbody.replaceChildren(...rows.map((r) => {
+      const tr = el('tr');
+      tr.appendChild(el('td', 'yr', String(r.year)));
+      tr.appendChild(el('td', 'num', nf.format(Number(r.streams))));
+      const hc = el('td'); const wrap = el('div', 'ah-cellbar');
+      const bar = el('i'); bar.style.width = (Number(r.hours) / maxH * 100).toFixed(1) + '%'; bar.style.maxWidth = '9rem';
+      wrap.append(el('span', null, nf.format(Number(r.hours))), bar); hc.appendChild(wrap); tr.appendChild(hc);
+      tr.appendChild(el('td', 'num', nf1.format(Number(r.avg))));
+      const pc = el('td', 'num'); const pill = el('span', 'ah-pill', nf.format(Number(r.peak)));
+      pill.style.setProperty('--pc', Number(r.peak) === maxP ? C.gold : C.violet); pc.appendChild(pill); tr.appendChild(pc);
+      tr.appendChild(el('td', 'num', FMT.signed(r.followers)));
+      const gc = el('td');
+      if (r.top_game) { const chip = el('span', 'ah-gchip', String(r.top_game)); chip.style.setProperty('--gc', gameColor(r.top_game)); gc.appendChild(chip); }
+      tr.appendChild(gc);
+      return tr;
+    }));
+  }
+
+  let heatYear = null;
+  const HEAT = ['#CFEBFF', '#7DD3FF', '#40B0FF', '#1F69FF', '#1238A8'];
+  function drawHeat() {
+    const box = document.getElementById('heat-chart');
+    const tip = document.getElementById('heat-tip');
+    const bar = document.getElementById('heat-years');
+    const d = dash.data('daily');
+    if (failed(box, d)) { bar.replaceChildren(); return; }
+    const hours = new Map(d.data.map((r) => [String(r.date).slice(0, 10), Number(r.hours)]));
+    const years = [...new Set(d.data.map((r) => String(r.date).slice(0, 4)))].sort();
+    if (!heatYear || !years.includes(heatYear)) heatYear = years[years.length - 1];
+    bar.replaceChildren(...years.map((yr) => {
+      const b = el('button', 'ah-seg' + (yr === heatYear ? ' is-on' : ''), yr); b.type = 'button';
+      b.style.setProperty('--sc', C.blue);
+      b.setAttribute('aria-pressed', yr === heatYear);
+      b.addEventListener('click', () => { heatYear = yr; drawHeat(); fillMarks(); });
+      return b;
+    }));
+    ['heat-days', 'heat-hours', 'heat-year'].forEach((id) => { document.getElementById(id).dataset.where = 'year=' + heatYear; });
+    const W = Math.max(280, box.clientWidth);
+    const start = new Date(Date.UTC(Number(heatYear), 0, 1));
+    const end = new Date(Date.UTC(Number(heatYear) + 1, 0, 1));
+    const days = d3.utcDay.range(start, end);
+    const offset = (start.getUTCDay() + 6) % 7;
+    const cols = Math.ceil((days.length + offset) / 7);
+    box.replaceChildren();
+    const svg = d3.select(box).append('svg');
+    const left = Math.ceil(measure(svg, ['Mon', 'Wed', 'Fri'])) + 6, top = 18;
+    const cell = Math.max(5, Math.min(17, Math.floor((W - left) / cols)));
+    const gap = cell > 9 ? 3 : 1;
+    const Wd = left + cols * cell, H = top + 7 * cell + 2;
+    svg.attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Stream days in ' + heatYear);
+    const level = (h) => (h < 2 ? 0 : h < 4 ? 1 : h < 6 ? 2 : h < 9 ? 3 : 4);
+    svg.append('g').selectAll('rect').data(days).join('rect')
+      .attr('x', (t, i) => left + Math.floor((i + offset) / 7) * cell)
+      .attr('y', (t, i) => top + ((i + offset) % 7) * cell)
+      .attr('width', cell - gap).attr('height', cell - gap).attr('rx', cell > 9 ? 3 : 1)
+      .style('fill', (t) => { const h = hours.get(t.toISOString().slice(0, 10)); return h != null ? HEAT[level(h)] : 'var(--cds-chart-grid)'; });
+    svg.append('g').selectAll('text').data([['Mon', 0], ['Wed', 2], ['Fri', 4]]).join('text').attr('class', 'ah-tick')
+      .attr('x', 0).attr('y', (p) => top + p[1] * cell + (cell - gap) / 2).attr('dy', '0.32em').text((p) => p[0]);
+    let lastX = -999;
+    const firsts = d3.utcMonth.range(start, end).map((t) => {
+      const i = Math.round((t - start) / 864e5);
+      return { m: t.getUTCMonth(), x: left + Math.floor((i + offset) / 7) * cell };
+    }).filter((p) => { const ok = p.x - lastX >= 28; if (ok) lastX = p.x; return ok; });
+    svg.append('g').selectAll('text').data(firsts).join('text').attr('class', 'ah-tick').attr('x', (p) => p.x).attr('y', 11).text((p) => MONTHS[p.m]);
+    svg.append('rect').attr('x', left).attr('y', top).attr('width', Wd - left).attr('height', 7 * cell).style('fill', 'transparent')
+      .on('mousemove', (ev) => {
+        const [px, py] = d3.pointer(ev);
+        const c = Math.floor((px - left) / cell), r = Math.floor((py - top) / cell);
+        const i = c * 7 + r - offset;
+        if (i < 0 || i >= days.length || r < 0 || r > 6) { tip.hidden = true; return; }
+        const key = days[i].toISOString().slice(0, 10);
+        const h = hours.get(key);
+        const scale = box.clientWidth / W;
+        tipAt(tip, box.parentElement, (left + c * cell + cell / 2) * scale, (top + r * cell) * scale, FMT.date(key), h != null ? nf1.format(h) + ' hours live' : 'No stream');
+      })
+      .on('mouseleave', () => { tip.hidden = true; });
+  }
+
+  function recordTable(sel, cat, cols) {
+    const tbody = document.querySelector(sel + ' tbody');
+    const d = dash.data('records');
+    if (d.status !== 'ok') { tbody.replaceChildren(); return; }
+    const rows = d.data.filter((r) => r.category === cat).sort((a, b) => Number(a.rank) - Number(b.rank));
+    tbody.replaceChildren(...rows.map((r) => {
+      const tr = el('tr'); tr.dataset.key = r.id;
+      cols.forEach(([fn, cls]) => { const td = el('td', cls); const v = fn(r); if (v instanceof Node) td.appendChild(v); else td.textContent = v; tr.appendChild(td); });
+      return tr;
+    }));
+  }
+  const pill = (txt, color) => { const p = el('span', 'ah-pill', txt); p.style.setProperty('--pc', color); return p; };
+  function drawRecords() {
+    recordTable('#peak-table', 'peak', [[(r) => FMT.date(r.date)], [(r) => pill(nf.format(Number(r.peak)), Number(r.rank) === 1 ? C.gold : C.amber), 'num'], [(r) => nf.format(Number(r.avg)), 'num'], [(r) => FMT.hours(r.hours), 'num'], [(r) => String(r.games)]]);
+    recordTable('#long-table', 'longest', [[(r) => FMT.date(r.date)], [(r) => pill(FMT.hours(r.hours), C.cyan), 'num'], [(r) => nf.format(Number(r.avg)), 'num'], [(r) => FMT.signed(r.followers), 'num'], [(r) => String(r.games)]]);
+  }
+
+  function drawCommunity() {
+    const tc = dash.data('top_chatters');
+    const list = document.getElementById('chatters-list');
+    if (!failed(list, tc)) {
+      const rows = tc.data.slice().sort((a, b) => Number(a.rank) - Number(b.rank)).filter((r) => Number(r.rank) > 3);
+      barRows(list, rows.map((r, i) => ({ rank: r.rank, label: String(r.name), value: Number(r.messages), color: i < 7 ? C.violet : C.sky })), { rank: true });
+    }
+    const mc = dash.data('month_chat');
+    const ml = document.getElementById('month-list');
+    if (!failed(ml, mc)) {
+      const rows = mc.data.slice().sort((a, b) => Number(a.rank) - Number(b.rank));
+      barRows(ml, rows.map((r) => ({ rank: r.rank, label: String(r.name), value: Number(r.messages) })), { rank: true, color: C.green });
+    }
+    const lt = document.querySelector('#loyal-table tbody');
+    const ly = dash.data('loyalty');
+    if (ly.status === 'ok') {
+      lt.replaceChildren(...ly.data.slice().sort((a, b) => Number(a.rank) - Number(b.rank)).map((r) => {
+        const tr = el('tr');
+        const sc = el('td', 'num'); sc.appendChild(pill(nf.format(Number(r.streams)), C.violet));
+        tr.append(el('td', 'num', String(r.rank)), el('td', null, String(r.name)), sc,
+          el('td', 'num', nf.format(Number(r.best_streak))), el('td', 'num', nf.format(Number(r.first_in_chat))));
+        return tr;
+      }));
+    } else lt.replaceChildren();
+    const em = dash.data('emotes');
+    const wall = document.getElementById('emote-wall'), own = document.getElementById('own-emotes');
+    if (!failed(wall, em)) {
+      const all = em.data.filter((r) => r.kind === 'all').sort((a, b) => Number(a.rank) - Number(b.rank));
+      wall.replaceChildren(...all.map((r, i) => {
+        const chip = el('div', 'ah-emote' + (i < 3 ? ' top' : ''));
+        chip.style.setProperty('--ec', PALETTE[i % PALETTE.length]);
+        chip.title = r.provider;
+        chip.append(el('b', null, String(r.emote)), el('span', null, nfc.format(Number(r.uses))));
+        return chip;
+      }));
+    }
+    if (!failed(own, em)) {
+      const rows = em.data.filter((r) => r.kind === 'own').sort((a, b) => Number(a.rank) - Number(b.rank));
+      barRows(own, rows.map((r, i) => ({ label: String(r.emote), value: Number(r.uses), color: PALETTE[i % PALETTE.length] })), { rank: false });
+    }
+    const cm = dash.data('commands');
+    const cl = document.getElementById('command-list');
+    if (!failed(cl, cm)) {
+      const rows = cm.data.slice().sort((a, b) => Number(a.rank) - Number(b.rank));
+      barRows(cl, rows.map((r) => ({ rank: r.rank, label: String(r.command), value: Number(r.uses), extra: 'uses' })), { rank: true, color: C.cyan });
+    }
+  }
+
+  function drawHabits() {
+    const gd = dash.data('games');
+    const gl = document.getElementById('games-list');
+    if (!failed(gl, gd)) {
+      const rows = gd.data.slice().sort((a, b) => Number(b.hours) - Number(a.hours));
+      barRows(gl, rows.map((r, i) => {
+        const y1 = String(r.first).slice(0, 4), y2 = String(r.last).slice(0, 4);
+        return { rank: i + 1, label: String(r.game), value: Number(r.hours), color: gameColor(r.game), extra: 'h · ' + (y1 === y2 ? y1 : y1 + '–' + y2) };
+      }), { rank: true });
+    }
+    const cs = dash.data('cs2');
+    const mp = document.getElementById('map-list');
+    if (!failed(mp, cs)) {
+      const rows = cs.data.filter((r) => r.kind === 'map').sort((a, b) => Number(b.count) - Number(a.count));
+      barRows(mp, rows.map((r, i) => ({ label: String(r.label), value: Number(r.count), color: i === 0 ? C.red : '#FB7185' })), { rank: false });
+    }
+    drawRhythm();
+    drawClips();
+  }
+
+  function smallBars(boxId, tipId, rows, labelEvery, valueLabel, c1, c2) {
+    const box = document.getElementById(boxId);
+    const tip = document.getElementById(tipId);
+    const W = Math.max(240, box.clientWidth), H = 170;
+    box.replaceChildren();
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    const fill = vGrad(svg, c2, c1);
+    const max = d3.max(rows, (r) => r.value) || 1;
+    const y0 = d3.scaleLinear([0, max * 1.12], [0, 1]).nice();
+    const ticks = y0.ticks(3);
+    const ml = Math.ceil(measure(svg, ticks.map((t) => nf.format(t)))) + 8, mr = 4, mt = 8, mb = 22;
+    const y = d3.scaleLinear(y0.domain(), [H - mb, mt]);
+    const x = d3.scaleBand(rows.map((r) => r.label), [ml, W - mr]).paddingInner(0.25);
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', ml).attr('x2', W - mr)
+      .attr('y1', (t) => y(t)).attr('y2', (t) => y(t)).style('stroke', (t) => (t === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)'));
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('class', 'ah-tick').attr('x', ml - 6).attr('y', (t) => y(t))
+      .attr('dy', '0.32em').attr('text-anchor', 'end').text((t) => nf.format(t));
+    const top = rows.reduce((a, b) => (b.value > a.value ? b : a));
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', (r) => x(r.label)).attr('width', x.bandwidth()).attr('y', (r) => y(r.value)).attr('height', (r) => y(0) - y(r.value))
+      .attr('rx', Math.min(4, x.bandwidth() / 2)).style('fill', (r) => (r === top ? C.gold : fill));
+    svg.append('g').selectAll('text').data(rows.filter((r, i) => i % labelEvery === 0)).join('text').attr('class', 'ah-tick')
+      .attr('x', (r) => x(r.label) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle').text((r) => r.label);
+    svg.append('rect').attr('x', ml).attr('y', mt).attr('width', W - ml - mr).attr('height', H - mt - mb).style('fill', 'transparent')
+      .on('mousemove', (ev) => {
+        const [px] = d3.pointer(ev);
+        const i = Math.max(0, Math.min(rows.length - 1, Math.floor((px - ml) / x.step())));
+        const r = rows[i];
+        const scale = box.clientWidth / W;
+        tipAt(tip, box.parentElement, (x(r.label) + x.bandwidth() / 2) * scale, y(r.value) * scale, r.full || r.label, valueLabel(r.value));
+      })
+      .on('mouseleave', () => { tip.hidden = true; });
+  }
+  const DAYNAMES = { Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday', Sun: 'Sunday' };
+  function drawRhythm() {
+    const d = dash.data('rhythm');
+    const a = document.getElementById('weekday-chart'), b = document.getElementById('hour-chart');
+    const fa = failed(a, d), fb = failed(b, d);
+    if (fa || fb) return;
+    const wd = d.data.filter((r) => r.kind === 'weekday').map((r) => ({ label: String(r.label), full: DAYNAMES[r.label] || String(r.label), value: Number(r.value) }));
+    const hr = d.data.filter((r) => r.kind === 'hour').map((r) => ({ label: String(r.label), full: r.label + ':00–' + r.label + ':59', value: Number(r.value) }));
+    smallBars('weekday-chart', 'weekday-tip', wd, 1, (v) => nf.format(v) + ' hours live', C.blue, C.sky);
+    smallBars('hour-chart', 'hour-tip', hr, b.clientWidth < 420 ? 6 : 3, (v) => nf.format(v) + ' streams started', '#0E7490', C.cyan);
+  }
+
+  function drawClips() {
+    const tbody = document.querySelector('#clip-table tbody');
+    const d = dash.data('clips');
+    if (d.status !== 'ok') { tbody.replaceChildren(); return; }
+    tbody.replaceChildren(...d.data.slice().sort((a, b) => Number(a.rank) - Number(b.rank)).map((r) => {
+      const tr = el('tr');
+      const c2 = el('td');
+      const url = String(r.url || '');
+      if (url.startsWith('https://www.twitch.tv/')) { const a = el('a', null, String(r.title)); a.href = url; a.target = '_blank'; a.rel = 'noopener'; c2.appendChild(a); }
+      else c2.textContent = String(r.title);
+      const vc = el('td', 'num'); vc.appendChild(pill(nf.format(Number(r.views)), Number(r.rank) === 1 ? C.gold : C.pink));
+      tr.append(el('td', 'num', String(r.rank)), c2, el('td', 'ah-hide-sm ah-dim', String(r.by)), vc);
+      return tr;
+    }));
+  }
+
+  // ---------------------------------------------------------------- tabs
+  const PAGES = ['overview', 'history', 'records', 'community', 'habits'];
+  let current = PAGES.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+  const DRAW = {
+    overview: () => drawCareer(),
+    history: () => { drawMonthly(); drawFollowers(); drawHeat(); },
+    records: () => {},
+    community: () => {},
+    habits: () => drawHabits(),
+  };
+  function show(name, link) {
+    current = name;
+    PAGES.forEach((p) => {
+      document.getElementById(p).hidden = p !== name;
+      const t = document.getElementById('tab-' + p);
+      t.setAttribute('aria-selected', p === name ? 'true' : 'false');
+      t.tabIndex = p === name ? 0 : -1;
+    });
+    DRAW[name]();
+    if (link) dash.setLink(name);
+  }
+  document.getElementById('ah-tabs').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-tab]');
+    if (b) show(b.dataset.tab, true);
+  });
+  document.getElementById('ah-tabs').addEventListener('keydown', (ev) => {
+    if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+    const i = PAGES.indexOf(current) + (ev.key === 'ArrowRight' ? 1 : -1);
+    const next = PAGES[(i + PAGES.length) % PAGES.length];
+    show(next, true);
+    document.getElementById('tab-' + next).focus();
+  });
+  root.querySelectorAll('[data-goto]').forEach((b) => b.addEventListener('click', () => { show(b.dataset.goto, true); document.getElementById('ah-tabs').scrollIntoView({ block: 'start' }); }));
+
+  let first = true;
+  dash.onData(() => {
+    if (first) { show(current, false); first = false; } else DRAW[current]();
+    drawYears();
+    drawRecords();
+    drawCommunity();
+    fillMarks();
+  });
+})();
+</script>
+
+</body>
+</html>
