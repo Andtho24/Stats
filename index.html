@@ -135,6 +135,9 @@ a{color:#40B0FF}
 .ah-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:var(--cds-gap-md)}
 .ah-grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));gap:var(--cds-gap-md)}
 .ah-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:var(--cds-gap-md)}
+.ah{container-type:inline-size}
+@container (min-width:56rem){.ah-tiles:has(> :nth-child(4):last-child){grid-template-columns:repeat(4,minmax(0,1fr))}}
+@container (min-width:26rem) and (max-width:55.99rem){.ah-tiles:has(> :nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ah-tile{position:relative;overflow:hidden;border-radius:calc(var(--cds-radius) * 1.6);padding:var(--cds-pad-md) var(--cds-pad-lg);display:grid;gap:.3rem;align-content:start;min-width:0;
   background:linear-gradient(160deg,color-mix(in srgb,var(--tc) 16%,var(--color-panel)) 0%,var(--color-panel) 70%);border:1px solid color-mix(in srgb,var(--tc) 30%,var(--color-border-line))}
 .ah-tile .ico{width:2.1rem;height:2.1rem;border-radius:.7rem;display:grid;place-items:center;color:#fff;background:var(--tc);box-shadow:0 6px 14px -8px var(--tc);margin-bottom:.2rem}
