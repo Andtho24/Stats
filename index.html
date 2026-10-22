@@ -224,6 +224,88 @@ a{color:#40B0FF}
 .ah-emote.top{padding:.5rem 1rem}
 .ah-emote.top b{font-family:var(--ah-display);font-size:var(--cds-font-size-heading)}
 
+/* ---------- next + last stream */
+.ah-now{display:grid;gap:var(--cds-gap-sm);align-content:start}
+.ah-count{font-family:var(--ah-display);font-weight:700;font-size:var(--cds-font-size-title);line-height:1.15;display:flex;flex-wrap:wrap;align-items:center}
+.ah-count small{flex-basis:100%;font-family:var(--font-anthropic-sans);font-weight:400;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin-top:.25rem}
+.ah-live-dot{display:inline-block;width:.6rem;height:.6rem;border-radius:50%;background:var(--c-red);margin-right:.5rem;animation:ah-pulse 1.6s infinite}
+@keyframes ah-pulse{0%{box-shadow:0 0 0 0 rgba(244,63,94,.55)}70%{box-shadow:0 0 0 .55rem rgba(244,63,94,0)}100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}}
+@media (prefers-reduced-motion:reduce){.ah-live-dot{animation:none}}
+.ah-days{display:flex;flex-wrap:wrap;gap:.4rem}
+.ah-day{display:grid;gap:.05rem;min-width:4.2rem;padding:.35rem .6rem;border-radius:.7rem;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);
+  background:color-mix(in srgb,var(--c-sky) 9%,var(--color-panel));border:1px solid color-mix(in srgb,var(--c-sky) 26%,var(--color-border-line))}
+.ah-day b{font-family:var(--ah-display);font-size:var(--cds-font-size-body);color:var(--color-fg)}
+.ah-day.is-next{background:linear-gradient(135deg,var(--c-sky),var(--c-blue));color:rgba(255,255,255,.85);border-color:transparent}
+.ah-day.is-next b{color:#fff}
+.ah-day.is-off{opacity:.55;text-decoration:line-through}
+.ah-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,6.5rem),1fr));gap:var(--cds-gap-xs)}
+.ah-stat{display:grid;gap:.05rem;padding:.45rem .65rem;border-radius:.7rem;min-width:0;
+  background:color-mix(in srgb,var(--sc2) 10%,var(--color-panel));border:1px solid color-mix(in srgb,var(--sc2) 28%,var(--color-border-line))}
+.ah-stat span{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.ah-stat b{font-family:var(--ah-display);font-size:var(--cds-font-size-heading);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ah-chips{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+.ah-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.15rem .6rem;border-radius:999px;font-size:var(--cds-font-size-caption);max-width:100%;
+  background:color-mix(in srgb,var(--cc,var(--c-sky)) 14%,var(--color-panel));border:1px solid color-mix(in srgb,var(--cc,var(--c-sky)) 35%,var(--color-border-line))}
+.ah-chip svg{width:.9rem;height:.9rem;color:var(--cc,var(--c-sky))}
+a.ah-chip{text-decoration:none;font-weight:600}
+.ah-delta{display:inline-flex;align-items:center;gap:.25rem;font-size:var(--cds-font-size-caption);font-weight:600;padding:.05rem .45rem;border-radius:999px;white-space:nowrap}
+.ah-delta svg{width:.85rem;height:.85rem}
+.ah-delta.up{color:color-mix(in srgb,var(--c-green) 65%,var(--color-fg));background:color-mix(in srgb,var(--c-green) 16%,transparent)}
+.ah-delta.down{color:color-mix(in srgb,var(--c-red) 70%,var(--color-fg));background:color-mix(in srgb,var(--c-red) 14%,transparent)}
+.ah-delta.flat{color:var(--color-fg-muted);background:color-mix(in srgb,var(--color-fg) 7%,transparent)}
+.ah-tile .ah-sub{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}
+#tm-tiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr))}
+
+/* ---------- youtube */
+.ah-vids{display:grid;gap:.45rem;align-content:start}
+.ah-vid{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--cds-gap-sm);align-items:center;padding:.45rem .65rem;border-radius:.8rem;color:inherit;
+  background:color-mix(in srgb,var(--vc,var(--c-red)) 7%,var(--color-panel));border:1px solid color-mix(in srgb,var(--vc,var(--c-red)) 22%,var(--color-border-line))}
+.ah a.ah-vid{text-decoration:none}
+.ah-vid:hover{border-color:var(--vc,var(--c-red))}
+.ah-vid .pl{width:2rem;height:2rem;border-radius:.6rem;display:grid;place-items:center;background:var(--vc,var(--c-red));color:#fff}
+.ah-vid .pl svg{width:.9rem;height:.9rem}
+.ah-vid .tt{display:grid;min-width:0}
+.ah-vid .tn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.ah-vid .mt{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+
+/* ---------- milestones */
+.ah-next{display:grid;gap:.55rem}
+.ah-goal{display:grid;grid-template-columns:minmax(0,12rem) minmax(0,1fr) auto;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-body)}
+.ah-goal .ah-track{height:.8rem}
+.ah-tl{list-style:none;margin:0;padding:0;columns:2 22rem;column-gap:2.5rem}
+.ah-tl li{display:grid;grid-template-columns:2.1rem minmax(0,1fr);gap:var(--cds-gap-sm);align-items:center;padding:.35rem 0;position:relative;break-inside:avoid}
+.ah-tl li::before{content:"";position:absolute;left:calc(1.05rem - 1px);top:0;bottom:0;width:2px;background:color-mix(in srgb,var(--c-sky) 40%,transparent)}
+.ah-tl .dot{width:2.1rem;height:2.1rem;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--mk);box-shadow:0 0 0 4px var(--color-panel);position:relative;z-index:1}
+.ah-tl .dot svg{width:1rem;height:1rem}
+.ah-tl .when{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);font-variant-numeric:tabular-nums}
+.ah-tl .what{font-weight:600}
+.ah-tl li.is-year{padding:.6rem 0 .15rem}
+.ah-tl li.is-year span{width:.9rem;height:.9rem;border-radius:50%;margin-left:.6rem;background:var(--color-panel);border:2px solid var(--c-sky);position:relative;z-index:1}
+.ah-tl .yr-mark{font-family:var(--ah-display);font-weight:700;color:var(--c-sky)}
+
+/* ---------- find yourself + team */
+.ah-search{display:flex;align-items:center;gap:.55rem;padding:.6rem .9rem;border-radius:999px;cursor:text;
+  border:1px solid color-mix(in srgb,var(--c-violet) 40%,var(--color-border-line));background:color-mix(in srgb,var(--c-violet) 6%,var(--color-panel))}
+.ah-search svg{width:1.1rem;height:1.1rem;color:var(--c-violet);flex:none}
+.ah-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--color-fg);font:inherit;font-size:var(--cds-font-size-body)}
+.ah-search:focus-within{border-color:var(--c-violet);box-shadow:0 0 0 3px color-mix(in srgb,var(--c-violet) 25%,transparent)}
+.ah-sugg{display:flex;flex-wrap:wrap;gap:.4rem}
+.ah-sugg:empty{display:none}
+.ah-sugg button{font:inherit;font-size:var(--cds-font-size-caption);padding:.25rem .75rem;border-radius:999px;border:1px solid var(--color-border-line);background:transparent;color:var(--color-fg);cursor:pointer}
+.ah-sugg button:hover,.ah-sugg button:focus-visible{border-color:var(--c-violet);background:color-mix(in srgb,var(--c-violet) 12%,transparent);outline:none}
+.ah-me{display:grid;gap:var(--cds-gap-sm);padding:var(--cds-pad-md) var(--cds-pad-lg);border-radius:calc(var(--cds-radius) * 1.6);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c-violet) 18%,var(--color-panel)),var(--color-panel) 70%);border:1px solid color-mix(in srgb,var(--c-violet) 32%,var(--color-border-line))}
+.ah-me-name{font-family:var(--ah-display);font-weight:700;font-size:var(--cds-font-size-title);overflow-wrap:anywhere}
+.ah-team{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,13rem),1fr));gap:var(--cds-gap-sm)}
+.ah-member{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.1rem .7rem;align-items:center;padding:.6rem .75rem;border-radius:.9rem;min-width:0;
+  background:color-mix(in srgb,var(--rc2) 10%,var(--color-panel));border:1px solid color-mix(in srgb,var(--rc2) 30%,var(--color-border-line))}
+.ah-av{grid-row:span 2;width:2.4rem;height:2.4rem;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--ah-display);font-weight:700;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--rc2) 65%,#fff),var(--rc2))}
+.ah-member b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ah-member span{display:inline-flex;align-items:center;gap:.3rem;font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);min-width:0}
+.ah-member span svg{width:.85rem;height:.85rem;color:var(--rc2);flex:none}
+@media (max-width:560px){.ah-goal{grid-template-columns:minmax(0,1fr) auto}.ah-goal .ah-track{grid-column:1 / -1;grid-row:2}}
+
 .ah a{color:inherit;text-decoration-color:color-mix(in srgb,var(--c-sky) 50%,transparent);text-underline-offset:2px}
 .ah a:hover{text-decoration-color:var(--c-sky)}
 .ah [data-dash-source-state=empty]{color:transparent}
@@ -267,6 +349,22 @@ a{color:#40B0FF}
       <div class="ah-tile ah-c-green"><div class="ico"><svg class="ic" data-icon="radio"></svg></div><div class="ah-lab">Average viewers, last 30 days</div><div class="ah-big dash-skeleton" data-source="channel" data-field="last30_avg_viewers" data-row="0" data-fmt="n1">—</div><div class="ah-sub"><span data-source="channel" data-field="last30_new_followers" data-row="0" data-fmt="signed">—</span> followers · <span data-source="channel" data-field="last30_hours" data-row="0" data-fmt="n1">—</span> h live</div></div>
     </div>
 
+    <div class="ah-grid" id="now">
+      <div class="ah-card ah-now" id="next-stream">
+        <h3><span class="bub" style="--bc:var(--c-sky)"><svg class="ic" data-icon="calendar-clock"></svg></span>Next stream</h3>
+        <div class="ah-now dash-skeleton" id="next-body" data-source="schedule" style="min-height:6.5rem"></div>
+      </div>
+      <div class="ah-card ah-now" id="last-stream">
+        <h3><span class="bub" style="--bc:var(--c-violet)"><svg class="ic" data-icon="play"></svg></span>Last stream</h3>
+        <div class="ah-now dash-skeleton" id="last-body" data-source="last_stream" style="min-height:6.5rem"></div>
+      </div>
+    </div>
+
+    <div class="ah-sec" id="this-month">
+      <div class="ah-sechead"><h2 class="ah-h2"><span class="bub" style="--bc:var(--c-green)"><svg class="ic" data-icon="trending-up"></svg></span><span id="tm-title">This month</span></h2><span class="ah-note" id="tm-note"></span></div>
+      <div class="ah-tiles" id="tm-tiles" data-source="monthly"></div>
+    </div>
+
     <div class="ah-card" id="career">
       <div class="ah-sechead"><h3><span class="bub" style="--bc:var(--c-blue)"><svg class="ic" data-icon="history"></svg></span>Average viewers, month by month</h3><button class="ah-link" type="button" data-goto="history">Full history →</button></div>
       <p class="ah-note">From the first stream in 2015 to today. The best month is marked in gold.</p>
@@ -282,6 +380,25 @@ a{color:#40B0FF}
         <div class="ah-hl ah-c-green"><div class="ico"><svg class="ic" data-icon="zap"></svg></div><div class="ah-lab">Longest streak</div><div class="ah-big dash-skeleton" data-source="channel" data-field="streak_days" data-row="0" data-fmt="days">—</div><div class="ah-sub"><span data-source="channel" data-field="streak_from" data-row="0" data-fmt="date">—</span> – <span data-source="channel" data-field="streak_to" data-row="0" data-fmt="date">—</span></div></div>
         <div class="ah-hl ah-c-pink"><div class="ico"><svg class="ic" data-icon="crown"></svg></div><div class="ah-lab">Number one chatter</div><div class="ah-big dash-skeleton" data-source="top_chatters" data-field="name" data-where="rank=1" data-fmt="text">—</div><div class="ah-sub"><span data-source="top_chatters" data-field="messages" data-where="rank=1" data-fmt="n">—</span> messages, all time</div></div>
         <div class="ah-hl ah-c-violet"><div class="ico"><svg class="ic" data-icon="gamepad-2"></svg></div><div class="ah-lab">Most streamed game</div><div class="ah-big dash-skeleton" data-source="games" data-field="game" data-where="rank=1" data-fmt="text">—</div><div class="ah-sub"><span data-source="games" data-field="hours" data-where="rank=1" data-fmt="n">—</span> hours live</div></div>
+      </div>
+    </div>
+
+    <div class="ah-sec" id="youtube" hidden>
+      <div class="ah-sechead"><h2 class="ah-h2"><span class="bub" style="--bc:var(--c-red)"><svg class="ic" data-icon="youtube"></svg></span>On YouTube</h2><a class="ah-link" id="yt-link" href="https://www.youtube.com/@Andthoo" target="_blank" rel="noopener">Open the channel <svg class="ic" data-icon="arrow-up-right"></svg></a></div>
+      <div class="ah-tiles">
+        <div class="ah-tile ah-c-red"><div class="ico"><svg class="ic" data-icon="youtube"></svg></div><div class="ah-lab">Subscribers</div><div class="ah-big dash-skeleton" data-source="youtube_channel" data-field="subscribers" data-row="0" data-fmt="n">—</div></div>
+        <div class="ah-tile ah-c-amber"><div class="ico"><svg class="ic" data-icon="eye"></svg></div><div class="ah-lab">Views, all videos</div><div class="ah-big dash-skeleton" data-source="youtube_channel" data-field="views" data-row="0" data-fmt="n">—</div></div>
+        <div class="ah-tile ah-c-violet"><div class="ico"><svg class="ic" data-icon="film"></svg></div><div class="ah-lab">Videos and Shorts</div><div class="ah-big dash-skeleton" data-source="youtube_channel" data-field="videos" data-row="0" data-fmt="n">—</div></div>
+      </div>
+      <div class="ah-grid">
+        <div class="ah-card">
+          <h3><span class="bub" style="--bc:var(--c-red)"><svg class="ic" data-icon="flame"></svg></span>Most watched Shorts</h3>
+          <div class="ah-vids" id="yt-shorts" data-source="youtube_videos"></div>
+        </div>
+        <div class="ah-card">
+          <h3><span class="bub" style="--bc:var(--c-blue)"><svg class="ic" data-icon="film"></svg></span>Latest uploads</h3>
+          <div class="ah-vids" id="yt-latest" data-source="youtube_videos"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -315,6 +432,12 @@ a{color:#40B0FF}
       <div class="ah-bar" id="heat-years" role="group" aria-label="Choose a year"></div>
       <p class="ah-note"><span data-source="yearly" data-field="days" data-where="year=2026" data-fmt="n" id="heat-days">—</span> stream days and <span data-source="yearly" data-field="hours" data-where="year=2026" data-fmt="n" id="heat-hours">—</span> hours live in <span data-source="yearly" data-field="year" data-where="year=2026" data-fmt="text" id="heat-year">—</span>. Darker blue means more hours that day.</p>
       <div class="ah-wrap"><div class="ah-chart is-heat dash-skeleton" id="heat-chart" data-source="daily"></div><div class="ah-tip" id="heat-tip" hidden></div></div>
+    </div>
+    <div class="ah-card" id="milestones">
+      <h3><span class="bub" style="--bc:var(--c-amber)"><svg class="ic" data-icon="flag"></svg></span>Milestones</h3>
+      <p class="ah-note">Big moments since the first stream, and what comes next. Follower dates are estimates from the followers gained per stream.</p>
+      <div class="ah-next" id="ms-next" data-source="milestones"></div>
+      <ol class="ah-tl dash-skeleton" id="ms-list" data-source="milestones" style="min-height:8rem"></ol>
     </div>
   </section>
 
@@ -359,6 +482,14 @@ a{color:#40B0FF}
       <div class="ah-tile ah-c-green"><div class="ico"><svg class="ic" data-icon="calendar-days"></svg></div><div class="ah-lab">Messages this month</div><div class="ah-big dash-skeleton" data-source="month_totals" data-field="messages" data-row="0" data-fmt="n">—</div><div class="ah-sub"><span data-source="month_totals" data-field="chatters" data-row="0" data-fmt="n">—</span> chatters in <span data-source="month_totals" data-field="month" data-row="0" data-fmt="month">—</span></div></div>
     </div>
 
+    <div class="ah-card" id="find">
+      <h3><span class="bub" style="--bc:var(--c-violet)"><svg class="ic" data-icon="search"></svg></span>Find yourself</h3>
+      <p class="ah-note">Type your Twitch name to see your own chat stats.</p>
+      <label class="ah-search"><svg class="ic" data-icon="search"></svg><input id="find-input" type="search" placeholder="Your Twitch name" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Your Twitch name"></label>
+      <div class="ah-sugg" id="find-sugg" role="list"></div>
+      <div id="find-out" aria-live="polite"></div>
+    </div>
+
     <div class="ah-card" id="leaderboard">
       <h3><span class="bub" style="--bc:var(--c-gold)"><svg class="ic" data-icon="crown"></svg></span>Top chatters of all time</h3>
       <p class="ah-note">Messages per person since StreamElements started counting. Bots and your own messages are left out.</p>
@@ -368,6 +499,12 @@ a{color:#40B0FF}
         <div class="ah-pod p3"><div class="ah-medal">3</div><div class="ah-pname dash-skeleton" data-source="top_chatters" data-field="name" data-where="rank=3" data-fmt="text">—</div><div class="ah-big" data-source="top_chatters" data-field="messages" data-where="rank=3" data-fmt="n">—</div><div class="ah-sub">messages</div></div>
       </div>
       <div class="ah-rows" id="chatters-list" data-source="top_chatters"></div>
+    </div>
+
+    <div class="ah-card" id="team-card" hidden>
+      <h3><span class="bub" style="--bc:var(--c-green)"><svg class="ic" data-icon="shield-check"></svg></span>Meet the team</h3>
+      <p class="ah-note" id="team-note">The mods and VIPs who help keep chat a good place.</p>
+      <div class="ah-team" id="team-list" data-source="team"></div>
     </div>
 
     <div class="ah-grid">
@@ -465,6 +602,18 @@ a{color:#40B0FF}
 (function () {
   const root = document.getElementById('ah');
   const ICONS = {
+    'calendar-clock': '<path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/>',
+    'search': '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    'shield-check': '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+    'gem': '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+    'youtube': '<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>',
+    'play': '<polygon points="6 3 20 12 6 21 6 3"/>',
+    'flag': '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+    'film': '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>',
+    'arrow-up-right': '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+    'trending-up': '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+    'trending-down': '<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>',
+    'swords': '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
     radio: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
     clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
     eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
@@ -970,6 +1119,286 @@ a{color:#40B0FF}
   }
 
   // ---------------------------------------------------------------- tabs
+
+  // ---------------------------------------------------------------- small helpers for the new parts
+  function icon(name) {
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('class', 'ic'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true');
+    s.innerHTML = ICONS[name] || '';
+    return s;
+  }
+  function chip(text, color, ic, href) {
+    const c = document.createElement(href ? 'a' : 'span'); c.className = 'ah-chip';
+    if (href) { c.href = href; c.target = '_blank'; c.rel = 'noopener'; }
+    if (color) c.style.setProperty('--cc', color);
+    if (ic) c.appendChild(icon(ic));
+    c.appendChild(document.createTextNode(text));
+    return c;
+  }
+  function stat(label, value, color) {
+    const s = el('div', 'ah-stat'); s.style.setProperty('--sc2', color);
+    s.append(el('span', null, label), el('b', null, value));
+    return s;
+  }
+  function deltaChip(pct, label) {
+    const cls = !isFinite(pct) || Math.abs(pct) < 1 ? 'flat' : pct > 0 ? 'up' : 'down';
+    const s = el('span', 'ah-delta ' + cls);
+    if (cls !== 'flat') s.appendChild(icon(pct > 0 ? 'trending-up' : 'trending-down'));
+    s.appendChild(document.createTextNode((pct > 0 ? '+' : '') + Math.round(pct) + '%' + (label ? ' ' + label : '')));
+    return s;
+  }
+  const enDay = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  const enLong = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+  const enTime = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const enWd = new Intl.DateTimeFormat('en-GB', { weekday: 'short' });
+  let tzName = '';
+  try { tzName = new Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' }).formatToParts(new Date()).find((p) => p.type === 'timeZoneName').value; } catch (e) { tzName = ''; }
+  function untilText(ms) {
+    const m = Math.max(1, Math.round(ms / 60000));
+    if (m < 60) return m + ' min';
+    const h = Math.floor(m / 60), mm = m % 60;
+    if (h < 24) return h + ' h' + (mm ? ' ' + mm + ' min' : '');
+    const d = Math.floor(h / 24), hh = h % 24;
+    return d + (d === 1 ? ' day' : ' days') + (hh ? ' ' + hh + ' h' : '');
+  }
+  const TWITCH = 'https://www.twitch.tv/andtho_';
+
+  // ---------------------------------------------------------------- next stream
+  function drawNext() {
+    const box = document.getElementById('next-body');
+    const d = dash.data('schedule');
+    if (d.status === 'loading') return;
+    box.classList.remove('dash-skeleton');
+    const now = Date.now();
+    const rows = (d.status === 'ok' ? d.data : []).map((r) => Object.assign({}, r, { s: Date.parse(r.start), e: Date.parse(r.end || r.start) }))
+      .filter((r) => !isNaN(r.s));
+    const vac = rows.find((r) => r.kind === 'vacation' && r.s <= now && r.e > now);
+    const segs = rows.filter((r) => r.kind === 'stream' && r.e > now).sort((a, b) => a.s - b.s);
+    const next = segs.find((r) => !r.canceled);
+    const parts = [];
+    if (!next) {
+      parts.push(el('div', 'ah-count', vac ? 'On a short break' : 'No stream planned yet'));
+      parts.push(el('p', 'ah-note', vac ? 'Back ' + enDay.format(new Date(vac.e)) + '. Follow on Twitch to get a ping when the stream starts.' : 'Follow on Twitch to get a ping when the stream starts.'));
+      parts.push(el('div', 'ah-chips'));
+      parts[2].appendChild(chip('twitch.tv/andtho_', C.violet, 'radio', TWITCH));
+    } else {
+      const c = el('div', 'ah-count');
+      if (next.s <= now) { c.append(el('span', 'ah-live-dot'), document.createTextNode('Should be live now')); }
+      else c.textContent = 'In ' + untilText(next.s - now);
+      c.appendChild(el('small', null, enDay.format(new Date(next.s)) + ' · ' + enTime.format(new Date(next.s)) + '–' + enTime.format(new Date(next.e)) + (tzName ? ' ' + tzName : '') + ' (your time)'));
+      parts.push(c);
+      const chips = el('div', 'ah-chips');
+      if (next.category) chips.appendChild(chip(next.category, gameColor(next.category), 'gamepad-2'));
+      if (next.title) chips.appendChild(chip(next.title, C.sky));
+      chips.appendChild(chip(next.s <= now ? 'Watch on Twitch' : 'twitch.tv/andtho_', C.violet, 'radio', TWITCH));
+      parts.push(chips);
+      const days = el('div', 'ah-days');
+      segs.slice(0, 7).forEach((r) => {
+        const dd = el('div', 'ah-day' + (r === next ? ' is-next' : '') + (r.canceled ? ' is-off' : ''));
+        dd.append(el('b', null, enWd.format(new Date(r.s))), el('span', null, enTime.format(new Date(r.s))));
+        dd.title = enDay.format(new Date(r.s)) + (r.canceled ? ' – cancelled' : '');
+        days.appendChild(dd);
+      });
+      parts.push(days);
+    }
+    box.replaceChildren(...parts);
+  }
+
+  // ---------------------------------------------------------------- last stream
+  function drawLast() {
+    const box = document.getElementById('last-body');
+    const d = dash.data('last_stream');
+    if (d.status === 'loading') return;
+    box.classList.remove('dash-skeleton');
+    const r = d.status === 'ok' ? d.data[0] : null;
+    if (!r) { box.replaceChildren(el('p', 'ah-note', 'No stream noted yet.')); return; }
+    const head = el('div', 'ah-count', enLong.format(asDay(r.date)));
+    head.appendChild(el('small', null, 'Started ' + r.start + ' Norway time · ' + nf1.format(Number(r.hours)) + ' h live'));
+    const st = el('div', 'ah-stats');
+    st.append(stat('Avg viewers', nf.format(Number(r.avg)), C.sky), stat('Peak', nf.format(Number(r.peak)), C.amber),
+      stat('New followers', FMT.signed(r.followers), C.pink), stat('Hours watched', nf.format(Number(r.hours_watched)), C.cyan));
+    const chips = el('div', 'ah-chips');
+    String(r.games || '').split(' / ').filter(Boolean).forEach((g) => { const c = el('span', 'ah-gchip', g); c.style.setProperty('--gc', gameColor(g)); chips.appendChild(c); });
+    const ch = dash.data('channel');
+    const l30 = ch.status === 'ok' && ch.data[0] ? Number(ch.data[0].last30_avg_viewers) : 0;
+    if (l30 > 0) chips.appendChild(deltaChip((Number(r.avg) - l30) / l30 * 100, 'vs the 30-day average'));
+    const parts = [head, st, chips];
+    if (r.messages != null) {
+      const cc = el('div', 'ah-chips');
+      cc.appendChild(chip(nf.format(Number(r.messages)) + ' messages from ' + nf.format(Number(r.chatters || 0)) + ' chatters', C.violet, 'message-circle'));
+      if (r.top_chatter) cc.appendChild(chip('Most active: ' + r.top_chatter + ' (' + nf.format(Number(r.top_chatter_messages || 0)) + ')', C.gold, 'crown'));
+      const k = [['3K', r.k3], ['4K', r.k4], ['ACE', r.ace]].filter((x) => Number(x[1]) > 0).map((x) => x[1] + '× ' + x[0]).join(' · ');
+      if (k) cc.appendChild(chip(k, C.red, 'swords'));
+      parts.push(cc);
+    }
+    box.replaceChildren(...parts);
+  }
+
+  // ---------------------------------------------------------------- this month vs last month
+  function drawMonthCompare() {
+    const box = document.getElementById('tm-tiles');
+    const m = dash.data('monthly'), ch = dash.data('channel'), dl = dash.data('daily');
+    if (m.status !== 'ok' || ch.status !== 'ok' || !ch.data[0]) { box.replaceChildren(); return; }
+    const today = String(ch.data[0].updated || '').slice(0, 10);
+    const cur = today.slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(cur)) { box.replaceChildren(); return; }
+    const pd = asMonth(cur); pd.setUTCMonth(pd.getUTCMonth() - 1);
+    const prev = pd.toISOString().slice(0, 7);
+    const get = (k) => m.data.find((r) => r.month === k) || {};
+    const a = get(cur), b = get(prev);
+    const days = (k) => (dl.status === 'ok' ? dl.data.filter((r) => String(r.date).startsWith(k) && Number(r.hours) > 0).length : null);
+    document.getElementById('tm-title').textContent = monthFmt.format(asMonth(cur)) + ' so far';
+    document.getElementById('tm-note').textContent = 'Compared with all of ' + monthFmt.format(asMonth(prev));
+    const items = [
+      ['Stream days', days(cur), days(prev), 'calendar-days', C.blue],
+      ['Hours live', a.hours, b.hours, 'clock', C.cyan],
+      ['Average viewers', a.avg, b.avg, 'users', C.green],
+      ['Peak viewers', a.peak, b.peak, 'flame', C.amber],
+      ['New followers', a.followers, b.followers, 'heart', C.pink],
+    ];
+    box.replaceChildren(...items.map(([label, v, pv, ic, color]) => {
+      const t = el('div', 'ah-tile'); t.style.setProperty('--tc', color);
+      const i = el('div', 'ico'); i.appendChild(icon(ic));
+      const big = el('div', 'ah-big', v == null ? '—' : nf.format(Number(v || 0)));
+      const sub = el('div', 'ah-sub');
+      if (v != null && Number(pv) > 0) sub.appendChild(deltaChip((Number(v || 0) - Number(pv)) / Number(pv) * 100, ''));
+      sub.appendChild(document.createTextNode(monthShort.format(asMonth(prev)) + ': ' + (pv == null ? '—' : nf.format(Number(pv || 0)))));
+      t.append(i, el('div', 'ah-lab', label), big, sub);
+      return t;
+    }));
+  }
+
+  // ---------------------------------------------------------------- youtube
+  function vidRow(v, color) {
+    const a = document.createElement('a'); a.className = 'ah-vid'; a.href = v.url; a.target = '_blank'; a.rel = 'noopener';
+    a.style.setProperty('--vc', color);
+    const pl = el('span', 'pl'); pl.appendChild(icon('play'));
+    const tt = el('span', 'tt');
+    const tn = el('span', 'tn', v.title); tn.title = v.title;
+    const kind = v.kind === 'short' ? 'Short' : v.kind === 'stream' ? 'Full stream' : 'Video';
+    tt.append(tn, el('span', 'mt', kind + (v.date ? ' · ' + dayFmt.format(asDay(v.date)) : '')));
+    const vw = el('span', 'ah-val'); vw.append(el('b', null, nfc.format(Number(v.views || 0))), document.createTextNode(' views'));
+    a.append(pl, tt, vw);
+    return a;
+  }
+  function drawYouTube() {
+    const sec = document.getElementById('youtube');
+    const yc = dash.data('youtube_channel'), yv = dash.data('youtube_videos');
+    if (yc.status === 'loading') return;
+    if (yc.status !== 'ok' || !yc.data.length) { sec.hidden = true; return; }
+    sec.hidden = false;
+    if (yc.data[0].url) document.getElementById('yt-link').href = yc.data[0].url;
+    const vids = yv.status === 'ok' ? yv.data : [];
+    const shorts = vids.filter((v) => v.kind === 'short').sort((a, b) => Number(b.views) - Number(a.views)).slice(0, 5);
+    const latest = vids.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    const lastStream = latest.find((v) => v.kind === 'stream');
+    const pick = [lastStream].concat(latest.filter((v) => v !== lastStream)).filter(Boolean).slice(0, 5);
+    const col = (v) => (v.kind === 'stream' ? C.blue : v.kind === 'short' ? C.red : C.violet);
+    document.getElementById('yt-shorts').replaceChildren(...(shorts.length ? shorts.map((v) => vidRow(v, C.red)) : [el('p', 'ah-note', 'No public Shorts yet.')]));
+    document.getElementById('yt-latest').replaceChildren(...(pick.length ? pick.map((v) => vidRow(v, col(v))) : [el('p', 'ah-note', 'Nothing uploaded yet.')]));
+  }
+
+  // ---------------------------------------------------------------- milestones
+  const MS_KIND = { start: ['flag', C.sky], game: ['gamepad-2', C.violet], streams: ['radio', C.blue], hours: ['clock', C.cyan],
+    followers: ['heart', C.pink], viewers: ['users', C.green], record: ['trophy', C.gold] };
+  const GOAL_COLOR = { 'next-followers': C.pink, 'next-streams': C.blue, 'next-hours': C.cyan };
+  function drawMilestones() {
+    const nx = document.getElementById('ms-next'), ul = document.getElementById('ms-list');
+    const d = dash.data('milestones');
+    if (failed(ul, d)) { nx.replaceChildren(); return; }
+    const goals = d.data.filter((r) => r.kind === 'next');
+    nx.replaceChildren(...goals.map((g) => {
+      const row = el('div', 'ah-goal');
+      const from = Number(g.from || 0), val = Number(g.value || 0), tgt = Number(g.target || 0);
+      const pct = Math.max(0, Math.min(1, (val - from) / ((tgt - from) || 1)));
+      const nm = el('div', 'ah-nm'); nm.appendChild(el('b', null, 'Next: ' + g.title));
+      const tr = el('div', 'ah-track'); tr.style.setProperty('--rc', GOAL_COLOR[g.id] || C.sky);
+      const b = el('i'); b.style.width = (pct * 100).toFixed(1) + '%'; tr.appendChild(b);
+      row.append(nm, tr, el('div', 'ah-val', g.detail || ''));
+      return row;
+    }));
+    const items = d.data.filter((r) => r.kind !== 'next' && r.date).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : String(a.id) < String(b.id) ? -1 : 1));
+    const out = [];
+    let yr = null;
+    items.forEach((r) => {
+      const y = String(r.date).slice(0, 4);
+      if (y !== yr) { yr = y; const li = el('li', 'is-year'); li.append(el('span'), el('div', 'yr-mark', y)); out.push(li); }
+      const k = MS_KIND[r.kind] || ['star', C.sky];
+      const li = el('li');
+      const dot = el('span', 'dot'); dot.style.setProperty('--mk', k[1]); dot.appendChild(icon(k[0]));
+      const body = el('div');
+      const when = /-01$/.test(r.date) && /month/i.test(r.title) ? monthFmt.format(asMonth(r.date)) : dayFmt.format(asDay(r.date));
+      body.append(el('div', 'when', when), el('div', 'what', r.title));
+      if (r.detail) body.appendChild(el('div', 'ah-sub', r.detail));
+      li.append(dot, body);
+      out.push(li);
+    });
+    ul.replaceChildren(...out);
+  }
+
+  // ---------------------------------------------------------------- find yourself
+  let findReady = false;
+  function meCard(p) {
+    const c = el('div', 'ah-me');
+    c.appendChild(el('div', 'ah-me-name', p.name));
+    const st = el('div', 'ah-stats');
+    if (p.all_time != null) st.append(stat('All-time rank', '#' + p.all_time_rank, C.gold), stat('Messages, all time', nf.format(Number(p.all_time)), C.violet));
+    if (Number(p.month) > 0) st.appendChild(stat('This month', nf.format(Number(p.month)) + (p.month_rank ? ' (#' + p.month_rank + ')' : ''), C.green));
+    if (Number(p.tracked) > 0 && p.first_month) st.appendChild(stat('Since ' + monthShort.format(asMonth(p.first_month)), nf.format(Number(p.tracked)), C.sky));
+    if (Number(p.streams) > 0) st.appendChild(stat('Streams chatted in lately', nf.format(Number(p.streams)), C.cyan));
+    if (Number(p.best_streak) > 1) st.appendChild(stat('Best run', p.best_streak + ' streams in a row', C.amber));
+    if (Number(p.firsts) > 0) st.appendChild(stat('First in chat', p.firsts + (Number(p.firsts) === 1 ? ' time' : ' times'), C.pink));
+    c.appendChild(st);
+    if (p.all_time == null) c.appendChild(el('p', 'ah-note', 'Not in the all-time top 100 yet. Keep chatting!'));
+    return c;
+  }
+  function drawFind(pick) {
+    const inp = document.getElementById('find-input'), sg = document.getElementById('find-sugg'), out = document.getElementById('find-out');
+    if (!findReady) {
+      findReady = true;
+      inp.addEventListener('input', () => drawFind());
+      inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { const b = sg.querySelector('button'); if (b) { ev.preventDefault(); b.click(); } } });
+    }
+    const d = dash.data('chatters');
+    const q = String(pick || inp.value || '').trim().toLowerCase().replace(/^@/, '');
+    if (d.status !== 'ok') { sg.replaceChildren(); out.replaceChildren(); inp.disabled = d.status === 'loading'; return; }
+    inp.disabled = false;
+    if (!q) { sg.replaceChildren(); out.replaceChildren(); return; }
+    const exact = d.data.find((p) => String(p.login) === q);
+    if (exact) { sg.replaceChildren(); out.replaceChildren(meCard(exact)); return; }
+    const hits = d.data.filter((p) => String(p.login).includes(q)).slice(0, 8);
+    sg.replaceChildren(...hits.map((p) => {
+      const b = el('button', null, p.name); b.type = 'button'; b.setAttribute('role', 'listitem');
+      b.addEventListener('click', () => { inp.value = p.name; drawFind(p.login); });
+      return b;
+    }));
+    out.replaceChildren(...(hits.length ? [] : [el('p', 'ah-note', 'No one called “' + q + '” found yet. All-time numbers cover the top 100 chatters, and every message since October 2026 is counted.')]));
+  }
+
+  // ---------------------------------------------------------------- team
+  function drawTeam() {
+    const card = document.getElementById('team-card'), box = document.getElementById('team-list');
+    const d = dash.data('team');
+    if (d.status === 'loading') return;
+    if (d.status !== 'ok' || !d.data.length) { card.hidden = true; return; }
+    card.hidden = false;
+    const rows = d.data.slice().sort((a, b) => Number(a.rank) - Number(b.rank));
+    const mods = rows.filter((p) => p.role === 'mod').length;
+    document.getElementById('team-note').textContent = mods && mods < rows.length ? 'The mods and VIPs who help keep chat a good place.'
+      : mods ? 'The mods who help keep chat a good place.' : 'The VIPs of the channel – the regulars with a gem next to their name in chat.';
+    box.replaceChildren(...rows.map((p) => {
+      const mod = p.role === 'mod';
+      const m = el('div', 'ah-member'); m.style.setProperty('--rc2', mod ? C.green : C.pink);
+      const av = el('div', 'ah-av', (String(p.name).match(/[A-Za-z0-9]/) || ['?'])[0].toUpperCase());
+      const nm = el('b', null, p.name); nm.title = p.name;
+      const role = el('span');
+      role.append(icon(mod ? 'shield-check' : 'gem'), document.createTextNode((mod ? 'Moderator' : 'VIP') + (Number(p.messages) ? ' · ' + nfc.format(Number(p.messages)) + ' messages' : '')));
+      m.append(av, nm, role);
+      return m;
+    }));
+  }
+  setInterval(() => { if (current === 'overview' && !document.hidden) drawNext(); }, 30000);
+
   const PAGES = ['overview', 'history', 'records', 'community', 'habits'];
   let current = PAGES.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
   const DRAW = {
@@ -1009,6 +1438,13 @@ a{color:#40B0FF}
     drawYears();
     drawRecords();
     drawCommunity();
+    drawNext();
+    drawLast();
+    drawMonthCompare();
+    drawYouTube();
+    drawMilestones();
+    drawFind();
+    drawTeam();
     fillMarks();
   });
 })();
