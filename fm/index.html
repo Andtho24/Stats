@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FM save</title>
+<meta name="description" content="Football Manager save, streamed live on Twitch: trophies, best XI, records and every result.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060B17;--panel:#0C1527;--panel2:#101C33;--line:#1B2A47;--blue:#1F69FF;--sky:#40B0FF;--ice:#7DD3FF;--txt:#E8F1FF;--mut:#8EA3C4;--gold:#F5C84B;--green:#2BD07F;--red:#FF5A6E;--pitch:#0F5132;--pitch2:#11603A}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wide{font-family:Archivo,"Arial Black",sans-serif;font-stretch:125%;font-weight:900;text-transform:uppercase}
+.wrap{max-width:1320px;margin:0 auto;padding:0 32px}
+a{color:var(--ice)}
+.live{display:flex;align-items:center;gap:16px;min-height:54px;padding:10px 32px;background:linear-gradient(90deg,#123B9C,#1F69FF 55%,#3C8BFF);font:700 15px Inter;flex-wrap:wrap}
+.live .tag{font:800 12px Inter;letter-spacing:.2em;background:#fff;color:#0A1838;padding:6px 10px;border-radius:4px}
+.live .sc{font-size:21px}.live .min{opacity:.85}
+.live a{margin-left:auto;background:rgba(5,11,24,.35);padding:9px 16px;border-radius:8px;color:#fff;text-decoration:none;font:800 13px Inter;letter-spacing:.08em}
+.hero{padding:52px 0 34px;background:radial-gradient(ellipse at 80% 0%,rgba(31,105,255,.28),transparent 60%),linear-gradient(180deg,#0A1530,var(--bg))}
+.kick{font:800 13px Inter;letter-spacing:.32em;color:var(--ice)}
+.hero h1{margin:14px 0 6px;font-size:clamp(42px,7vw,86px);line-height:.92}
+.hero .sub{font:600 18px Inter;color:var(--mut)}
+.chips{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;min-width:160px}
+.chip b{display:block;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:900;font-size:30px;margin:4px 0}
+.chip span{font:700 12px Inter;letter-spacing:.18em;color:var(--mut)}
+.form{display:flex;gap:6px;margin-top:6px}.form i{width:26px;height:26px;border-radius:5px;display:grid;place-items:center;font:800 12px Inter;font-style:normal}
+.W{background:var(--green);color:#04210F}.D{background:#5B6B86;color:#fff}.L{background:var(--red);color:#2A0309}
+section{padding:36px 0 6px}
+h2{font-size:28px;margin:0 0 6px}.h2s{font:600 15px Inter;color:var(--mut);margin-bottom:20px}
+.empty{background:var(--panel);border:1px dashed #2A3F66;border-radius:14px;padding:22px;color:var(--mut);font:600 15px Inter}
+.tl{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding-top:34px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:12px;height:2px;background:linear-gradient(90deg,var(--blue),var(--sky),var(--line))}
+.ev{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.ev::before{content:"";position:absolute;left:18px;top:-28px;width:12px;height:12px;background:var(--sky);transform:rotate(45deg);box-shadow:0 0 12px var(--sky)}
+.ev.tro::before{background:var(--gold);box-shadow:0 0 14px var(--gold)}
+.ev .d{font:800 11px Inter;letter-spacing:.2em;color:var(--mut)}.ev .t{font:800 17px Inter;margin:8px 0 4px}.ev .x{font:600 13px/1.4 Inter;color:var(--mut)}
+.ev.tro{border-color:rgba(245,200,75,.45);background:linear-gradient(180deg,rgba(245,200,75,.10),var(--panel))}
+.ev .cup{width:32px;height:32px;color:var(--gold);margin-bottom:6px;display:block}
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:24px}
+@media (max-width:960px){.two{grid-template-columns:1fr}.wrap{padding:0 16px}.live{padding:10px 16px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+.pitch{position:relative;height:560px;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(180deg,var(--pitch) 0 70px,var(--pitch2) 70px 140px);border:2px solid rgba(255,255,255,.25)}
+@media (max-width:600px){.pitch{height:470px}.p{width:86px!important}.p .n{font-size:12px!important}.p .s{display:none}}
+.pitch .ln{position:absolute;border:2px solid rgba(255,255,255,.28)}
+.p{position:absolute;transform:translate(-50%,-50%);width:118px;text-align:center}
+.p .r{display:inline-block;font:800 15px Inter;background:#fff;color:#0A1838;padding:4px 9px;border-radius:6px;margin-bottom:6px}
+.p .r.top{background:var(--gold)}.p .n{font:800 14px Inter;text-shadow:0 2px 6px rgba(0,0,0,.6)}.p .s{font:600 11px Inter;color:#D7F5E5}
+.p.none .n{opacity:.5}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.tabs button{font:800 12px Inter;letter-spacing:.12em;padding:8px 12px;border-radius:8px;background:var(--panel2);color:var(--mut);border:0;cursor:pointer}.tabs button.on{background:var(--blue);color:#fff}
+table{width:100%;border-collapse:collapse;font:600 14px Inter}
+th{font:800 11px Inter;letter-spacing:.16em;color:var(--mut);text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 8px;border-bottom:1px solid rgba(27,42,71,.6)}
+.tw{overflow-x:auto}
+td.num{font-family:Archivo,sans-serif;font-stretch:110%;font-weight:800;white-space:nowrap}
+.pos{display:inline-block;min-width:34px;text-align:center;font:800 13px Inter;padding:4px 6px;border-radius:6px;background:var(--panel2)}
+.pos.g{background:var(--gold);color:#2A1E00;margin:2px 4px 2px 0}
+.lead{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(27,42,71,.6)}
+.lead .rk{width:26px;font:800 14px Inter;color:var(--mut)}.lead .nm{flex:1;font:700 15px Inter}.lead .v{font-family:Archivo,sans-serif;font-stretch:125%;font-weight:900;font-size:22px}
+.bar{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--sky));margin-top:4px}
+.recs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.rec{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.rec span{font:800 11px Inter;letter-spacing:.18em;color:var(--mut)}.rec b{display:block;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:900;font-size:28px;margin:8px 0 4px}.rec i{font:600 13px Inter;color:var(--mut);font-style:normal}
+.ch{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(27,42,71,.6)}
+.ch .ic{width:36px;height:36px;border-radius:9px;background:linear-gradient(140deg,var(--sky),var(--blue));display:grid;place-items:center;flex:none;font:800 13px Inter}
+.ch b{font:800 14px Inter}.ch p{margin:3px 0 0;font:600 13px Inter;color:var(--mut)}
+.res{margin-left:auto;font:800 12px Inter;padding:5px 9px;border-radius:6px;white-space:nowrap}
+.mt{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(27,42,71,.6);font:600 15px Inter}
+.mt .rs{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;font:800 12px Inter;flex:none}
+.mt .sc{font-family:Archivo,sans-serif;font-stretch:125%;font-weight:900;font-size:18px;margin-left:auto;white-space:nowrap}
+.mt small{display:block;color:var(--mut);font:600 12px Inter;margin-top:2px}
+.foot{padding:36px 0 46px;color:var(--mut);font:600 13px Inter}
+.hide{display:none!important}
+</style></head><body>
+<div class="live hide" id="live"></div>
+<div class="hero"><div class="wrap">
+  <div class="kick" id="kick">FOOTBALL MANAGER 27</div>
+  <h1 class="wide" id="title">FM save</h1>
+  <div class="sub" id="sub"></div>
+  <div class="chips" id="chips"></div>
+</div></div>
+<div class="wrap">
+  <section><h2 class="wide">The story so far</h2><div class="h2s">Every trophy, final and big moment, added live on stream</div><div id="timeline"></div></section>
+  <section><div class="two">
+    <div class="card"><h2 class="wide" style="font-size:24px">Best XI</h2><div class="h2s" style="margin-bottom:12px" id="xiSub">Picked from average rating, 4-3-3</div>
+      <div class="tabs" id="xiTabs"><button data-t="season" class="on">THIS SEASON</button><button data-t="alltime">ALL-TIME</button></div>
+      <div id="xi"></div></div>
+    <div style="display:grid;gap:24px;align-content:start">
+      <div class="card"><h2 class="wide" style="font-size:24px">Top scorers</h2><div class="h2s" style="margin-bottom:6px">This season, all competitions</div><div id="scorers"></div></div>
+      <div class="card" id="ratedBox"><h2 class="wide" style="font-size:24px">Best rated</h2><div class="h2s" style="margin-bottom:6px">Average rating this season</div><div id="rated"></div></div>
+      <div class="card"><h2 class="wide" style="font-size:24px">Chat ran the club</h2><div class="h2s" style="margin-bottom:6px">Spin the Wheel challenges and how they went</div><div id="chal"></div></div>
+    </div>
+  </div></section>
+  <section><h2 class="wide">Latest results</h2><div class="h2s">Most recent first</div><div class="card" style="padding:6px 22px" id="matches"></div></section>
+  <section><h2 class="wide">Season by season</h2><div class="h2s">One row per season</div><div class="card tw" style="padding:8px 22px" id="seasons"></div></section>
+  <section><h2 class="wide">Records</h2><div class="h2s">Updated after every match</div><div class="recs" id="records"></div></section>
+  <div class="foot" id="foot"></div>
+</div>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th'));
+  const mon = s => { if (!s) return ''; const d = new Date(s); return isNaN(d) ? '' : d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toUpperCase(); };
+  const day = s => { if (!s) return ''; const d = new Date(s); return isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
+  const CUP = '<svg class="cup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>';
+  let D = null, xiTab = 'season';
+  const vs = (club, m) => m.venue === 'A' ? `${esc(m.opp)} – ${esc(club)}` : `${esc(club)} – ${esc(m.opp)}`;
+  const score = m => m.venue === 'A' ? `${m.ga}–${m.gf}` : `${m.gf}–${m.ga}`;
+
+  function render(d) {
+    D = d; const club = d.club || 'My club';
+    document.title = `${club} save · Football Manager`;
+    $('kick').textContent = `FOOTBALL MANAGER 27 · MANAGED BY ${(d.manager || 'ANDTHO_').toUpperCase()}`;
+    $('title').textContent = `${club} save`;
+    $('sub').textContent = [d.season, d.league, d.first_match ? 'started ' + new Date(d.first_match).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' on stream' : ''].filter(Boolean).join(' · ');
+    // live
+    const L = d.live, lv = $('live');
+    if (L && d.updated && Date.now() - new Date(L.since) < 4 * 3600e3) {
+      lv.classList.remove('hide');
+      lv.innerHTML = `<span class="tag">LIVE</span><span class="sc wide">${vs(club, L)} ${score(L)}</span><span class="min">${L.half === 2 ? 'Half time' : L.half === 3 ? '2nd half' : '1st half'} · ${esc(L.comp || '')}</span><a href="https://www.twitch.tv/${esc(d.manager || 'andtho_')}" target="_blank" rel="noopener">WATCH ON TWITCH ›</a>`;
+    } else lv.classList.add('hide');
+    // chips
+    const n = d.now || {}, chips = [];
+    chips.push(`<div class="chip"><span>LEAGUE</span><b>${d.position ? ord(d.position) : '–'}</b>${(n.form || []).length ? '<div class="form">' + n.form.map(r => `<i class="${r}">${r}</i>`).join('') + '</div>' : ''}</div>`);
+    chips.push(`<div class="chip"><span>RECORD</span><b>${n.w || 0}–${n.d || 0}–${n.l || 0}</b><span>W · D · L</span></div>`);
+    chips.push(`<div class="chip"><span>GOALS</span><b>${n.gf || 0} : ${n.ga || 0}</b><span>FOR · AGAINST</span></div>`);
+    chips.push(`<div class="chip"><span>TROPHIES</span><b>${d.trophies || 0}</b><span>IN ${d.seasons_played || 1} SEASON${(d.seasons_played || 1) > 1 ? 'S' : ''}</span></div>`);
+    if (d.next) chips.push(`<div class="chip"><span>NEXT</span><b style="font-size:22px;margin-top:8px">${esc(d.next.opp)} (${d.next.venue === 'A' ? 'A' : d.next.venue === 'N' ? 'N' : 'H'})</b><span>${esc((d.next.comp || '').toUpperCase())}</span></div>`);
+    $('chips').innerHTML = chips.join('');
+    // timeline
+    const tl = d.timeline || [];
+    $('timeline').innerHTML = tl.length ? '<div class="tl">' + tl.map(e => `<div class="ev ${e.kind === 'trophy' ? 'tro' : ''}">${e.kind === 'trophy' ? CUP : ''}<div class="d">${esc(e.season || '')} · ${mon(e.at)}</div><div class="t">${esc(e.title)}</div>${e.text ? `<div class="x">${esc(e.text)}</div>` : ''}</div>`).join('') + '</div>'
+      : '<div class="empty">Trophies and big moments show up here as they happen on stream.</div>';
+    renderXI();
+    // scorers
+    const lead = d.leaders || {}, sc = (lead.goals && lead.goals.length ? lead.goals : d.scorers) || [];
+    const max = Math.max(1, ...sc.map(x => x.v || 0));
+    $('scorers').innerHTML = sc.length ? sc.slice(0, 5).map((x, i) => `<div class="lead"><span class="rk">${i + 1}</span><div class="nm">${esc(x.name)}<div class="bar" style="width:${Math.round(100 * (x.v || 0) / max)}%"></div></div><span class="v">${x.v}</span></div>`).join('') : '<div class="empty">No goals yet this season.</div>';
+    const rt = lead.rating || [];
+    $('ratedBox').classList.toggle('hide', !rt.length);
+    $('rated').innerHTML = rt.slice(0, 5).map((x, i) => `<div class="lead"><span class="rk">${i + 1}</span><div class="nm">${esc(x.name)}<small style="display:block;color:var(--mut);font:600 12px Inter">${x.apps} apps</small></div><span class="v">${Number(x.v).toFixed(2)}</span></div>`).join('');
+    // challenges
+    const ch = d.challenges || [];
+    const ini = k => ({ fm_formation: '4-3', fm_youth: 'XI', fm_bench: 'B', fm_hairdryer: '!', fm_attack: '»', fm_sell: '£' }[k] || '?');
+    $('chal').innerHTML = ch.length ? ch.slice(0, 6).map(c => { const r = c.result || (c.status === 'pending' ? 'NEXT MATCH' : c.status === 'playing' ? 'PLAYING NOW' : ''); const cls = /^WON/.test(r) ? 'W' : /^LOST/.test(r) ? 'L' : /^DREW/.test(r) ? 'D' : ''; return `<div class="ch"><div class="ic">${ini(c.key)}</div><div><b>${esc(c.title)}</b><p>Spun by ${esc(c.by)}${c.detail ? ' · ' + esc(c.detail) : ''}</p></div>${r ? `<span class="res ${cls}" style="${cls ? '' : 'background:var(--panel2);color:var(--ice)'}">${esc(r)}</span>` : ''}</div>`; }).join('')
+      : '<div class="empty">When chat spins an FM challenge on the wheel, it shows up here with the result.</div>';
+    // matches
+    const ms = d.matches || [];
+    $('matches').innerHTML = ms.length ? ms.map(m => `<div class="mt"><span class="rs ${m.res}">${m.res}</span><div>${vs(club, m)}<small>${esc(m.comp || '')} · ${esc(m.season || '')} · ${day(m.at)}${m.scorers && m.scorers.length ? ' · ⚽ ' + esc(m.scorers.join(', ')) : ''}${m.pens ? (m.pens === 'us' ? ' · won on pens' : ' · lost on pens') : ''}</small></div><span class="sc">${score(m)}</span></div>`).join('') : '<div class="empty" style="margin:16px 0">No matches played yet.</div>';
+    // seasons
+    const ss = d.seasons || [];
+    $('seasons').innerHTML = `<table><tr><th>SEASON</th><th>LEAGUE</th><th>PTS</th><th>W–D–L</th><th>GOALS</th><th>TROPHIES</th><th>TOP SCORER</th><th>BEST RATED</th></tr>` +
+      ss.map(s => `<tr><td>${esc(s.season)}</td><td>${s.position ? `<span class="pos">${ord(s.position)}</span>` : '–'}${s.current ? ' <span style="color:var(--mut)">so far</span>' : ''}</td><td class="num">${s.pts}</td><td class="num">${s.w}–${s.d}–${s.l}</td><td class="num">${s.gf}:${s.ga}</td><td>${(s.cups || []).map(c => `<span class="pos g">${esc(c)}</span>`).join('') || '–'}</td><td>${s.top_scorer ? esc(s.top_scorer.name) + ' (' + s.top_scorer.v + ')' : '–'}</td><td>${s.best_rated ? esc(s.best_rated.name) + ' · ' + Number(s.best_rated.v).toFixed(2) : '–'}</td></tr>`).join('') + '</table>';
+    // records
+    const R = d.records || {}, rec = [];
+    if (R.best_win) rec.push(['BIGGEST WIN', R.best_win.score, `vs ${R.best_win.opp} · ${R.best_win.season || ''}`]);
+    if (R.worst) rec.push(['WORST DEFEAT', R.worst.score, `vs ${R.worst.opp} · ${R.worst.season || ''}`]);
+    if (R.unbeaten) rec.push(['LONGEST UNBEATEN RUN', R.unbeaten, R.unbeaten_now ? `unbeaten in ${R.unbeaten_now} right now` : 'matches without a defeat']);
+    if (R.win_streak) rec.push(['MOST WINS IN A ROW', R.win_streak, 'all competitions']);
+    if (R.most_goals) rec.push(['MOST GOALS IN A MATCH', R.most_goals.score, `vs ${R.most_goals.opp} · ${R.most_goals.season || ''}`]);
+    $('records').innerHTML = rec.length ? rec.map(r => `<div class="rec"><span>${r[0]}</span><b>${esc(r[1])}</b><i>${esc(r[2])}</i></div>`).join('') : '<div class="empty">Records appear after the first matches.</div>';
+    $('foot').textContent = 'Updated ' + new Date(d.updated).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' · results are entered live on stream';
+  }
+  function renderXI() {
+    const xi = ((D.xi || {})[xiTab]) || [];
+    const has = xi.some(p => p.name);
+    $('xiSub').textContent = has ? `Picked from average rating (enough games played), ${D.xi.formation || '4-3-3'}` : 'Shows up after the first squad stats update from the game';
+    if (!has) { $('xi').innerHTML = '<div class="empty">No player stats yet.</div>'; return; }
+    const top = Math.max(...xi.filter(p => p.name).map(p => p.rat || 0));
+    $('xi').innerHTML = '<div class="pitch"><div class="ln" style="left:24%;right:24%;top:-2px;height:14%"></div><div class="ln" style="left:24%;right:24%;bottom:-2px;height:14%"></div><div class="ln" style="left:-2px;right:-2px;top:50%;height:0"></div>' +
+      xi.map(p => p.name ? `<div class="p" style="left:${p.x}%;top:${p.y}%"><div class="r ${p.rat === top ? 'top' : ''}">${p.rat ? Number(p.rat).toFixed(2) : '–'}</div><div class="n">${esc(p.name)}</div><div class="s">${p.slot} · ${p.apps} apps${p.slot === 'GK' ? (p.cs ? ' · ' + p.cs + ' CS' : '') : (p.gls || p.ast ? ' · ' + (p.gls || 0) + 'G ' + (p.ast || 0) + 'A' : '')}</div></div>`
+        : `<div class="p none" style="left:${p.x}%;top:${p.y}%"><div class="n">${p.slot}</div></div>`).join('') + '</div>';
+  }
+  $('xiTabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; xiTab = b.dataset.t; [...$('xiTabs').children].forEach(x => x.classList.toggle('on', x === b)); renderXI(); });
+  function load() { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(render).catch(() => {}); }
+  load(); setInterval(load, 60000);
+})();
+</script>
+</body></html>
