@@ -54,26 +54,35 @@ h2{font-size:28px;margin:0 0 6px}.h2s{font:600 15px Inter;color:var(--mut);margi
 .stack{display:grid;gap:24px;align-content:start}
 @media (max-width:960px){.two,.xi2{grid-template-columns:1fr}.wrap{padding:0 16px}.live{padding:10px 16px}}
 .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}.tabs button{font:800 12px Inter;letter-spacing:.12em;padding:8px 12px;border-radius:8px;background:var(--panel2);color:var(--mut);border:0;cursor:pointer}.tabs button.on{background:var(--blue);color:#fff}
-/* story */
+/* story: horizontal slider, oldest left, newest right */
+.hs-wrap{position:relative}
+.hs{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 2px 14px;scrollbar-width:thin;scrollbar-color:#1B2A47 transparent}
+.hs::-webkit-scrollbar{height:6px}.hs::-webkit-scrollbar-thumb{background:#1B2A47;border-radius:3px}
+.hc{flex:0 0 320px;scroll-snap-align:end;padding-right:16px;display:flex;flex-direction:column}
+.hc .when{height:22px;font:800 11px Inter;letter-spacing:.16em;color:var(--mut);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.hc .when b{font-family:Archivo,sans-serif;font-stretch:125%;font-weight:900;font-size:20px;letter-spacing:0;color:var(--txt)}
+.hc .rail{position:relative;height:40px;margin:6px 0 10px;display:flex;align-items:center}
+.hc .rail::before{content:"";position:absolute;left:0;right:-16px;top:50%;height:2px;background:var(--line)}
+.hc:last-child .rail::before{right:auto;width:40px}
+.hc .tile{position:relative;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--ice)}
+.hc .tile svg{width:18px;height:18px}
+.hc .sea{position:relative;margin-left:10px;font:800 11px Inter;letter-spacing:.2em;color:var(--ice);background:var(--bg);padding:3px 8px;border:1px solid var(--line);border-radius:6px}
+.hc .body{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .2s,box-shadow .2s}
+.hc .body .t{font:800 17px/1.25 Inter;margin:9px 0 5px}.hc .body .x{font:600 14px/1.45 Inter;color:var(--mut)}
+.hc.k-trophy .tile,.hc.k-award .tile,.hc.k-promotion .tile{background:rgba(245,200,75,.16);border-color:rgba(245,200,75,.5);color:var(--gold)}
+.hc.k-trophy .body{border-color:rgba(245,200,75,.45);background:linear-gradient(180deg,rgba(245,200,75,.10),var(--panel))}
+.hc.k-sacked .tile,.hc.k-relegation .tile{color:var(--red)}
+.hc.k-appointed .tile{background:var(--blue);border-color:var(--blue);color:#fff}
+.hc.latest .body{border-color:var(--sky);box-shadow:0 0 0 1px var(--sky),0 14px 34px rgba(31,105,255,.28);background:linear-gradient(180deg,rgba(64,176,255,.10),var(--panel))}
+.hc.latest .tile{box-shadow:0 0 0 3px rgba(64,176,255,.35)}
+.hs-bar{display:flex;align-items:center;gap:8px;margin:-4px 0 12px}
+.hs-count{margin-right:auto;font:700 13px Inter;color:var(--mut)}
+.hs-nav{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font:800 20px Inter;cursor:pointer;display:grid;place-items:center;padding:0}
+.hs-nav:hover{border-color:var(--sky)}.hs-nav[disabled]{opacity:.3;cursor:default}
+.hs{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 8px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 8px),transparent)}
+@media (max-width:600px){.hc{flex-basis:82vw}.hs-nav{display:none}}
 .season-h{display:flex;align-items:center;gap:14px;margin:6px 0 14px;font:800 13px Inter;letter-spacing:.22em;color:var(--ice)}
 .season-h::after{content:"";flex:1;height:1px;background:var(--line)}
-.ev{display:grid;grid-template-columns:86px 40px 1fr;gap:0 14px;position:relative}
-.ev .when{text-align:right;padding-top:12px}
-.ev .when b{display:block;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:900;font-size:24px;line-height:1}
-.ev .when span{font:800 11px Inter;letter-spacing:.16em;color:var(--mut)}
-.ev .rail{position:relative;display:flex;justify-content:center}
-.ev .rail::before{content:"";position:absolute;top:0;bottom:0;width:2px;background:var(--line)}
-.ev:first-of-type .rail::before{top:22px}.ev.last .rail::before{bottom:calc(100% - 22px)}
-.ev .tile{position:relative;margin-top:10px;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--ice)}
-.ev .tile svg{width:18px;height:18px}
-.ev .body{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
-.ev .body .t{font:800 17px Inter;margin:8px 0 4px}.ev .body .x{font:600 14px/1.45 Inter;color:var(--mut)}
-.ev.k-trophy .tile{background:rgba(245,200,75,.16);border-color:rgba(245,200,75,.5);color:var(--gold)}
-.ev.k-trophy .body{border-color:rgba(245,200,75,.45);background:linear-gradient(180deg,rgba(245,200,75,.10),var(--panel))}
-.ev.k-appointed .tile{background:var(--blue);border-color:var(--blue);color:#fff}
-.ev.k-signing .tile{color:var(--green)}.ev.k-departure .tile{color:var(--red)}
-.ev.k-giant .tile,.ev.k-milestone .tile{color:var(--gold)}
-@media (max-width:600px){.ev{grid-template-columns:58px 30px 1fr;gap:0 10px}.ev .when b{font-size:19px}.ev .tile{width:30px;height:30px}}
 /* facts */
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .fact{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:18px}
@@ -155,9 +164,10 @@ tr:last-child td{border-bottom:0}
   <div class="chips" id="chips"></div>
 </div></div>
 <div class="wrap">
-  <section id="story"><h2 class="wide">The story so far</h2><div class="h2s">Everything big that happened in the save, written down by itself as you play</div>
-    <div class="tabs" id="storyTabs"><button data-f="all" class="on">EVERYTHING</button><button data-f="trophy">TROPHIES</button><button data-f="transfer">TRANSFERS</button><button data-f="milestone">MILESTONES</button></div>
-    <div id="storyList"></div></section>
+  <section id="story"><h2 class="wide">The story so far</h2><div class="h2s">The big moments of the save: jobs, trophies, promotions and awards</div>
+    <div class="tabs" id="storyTabs"><button data-f="all" class="on">EVERYTHING</button><button data-f="trophy">TROPHIES AND AWARDS</button><button data-f="career">CAREER</button></div>
+    <div class="hs-bar"><span class="hs-count" id="storyCount"></span><button class="hs-nav" id="stPrev" aria-label="Older">‹</button><button class="hs-nav" id="stNext" aria-label="Newer">›</button></div>
+    <div class="hs-wrap"><div class="hs" id="storyList"></div></div></section>
   <section id="facts-s"><h2 class="wide">Did you know?</h2><div class="h2s">Fresh facts from the save, new ones as the season goes on</div><div class="facts" id="facts"></div></section>
   <section id="season"><div class="two">
     <div class="stack">
@@ -213,8 +223,10 @@ tr:last-child td{border-bottom:0}
     appointed: ['APPOINTED', 'b', I.brief], signing: ['SIGNING', 'gr', I.inn], loan: ['LOAN', 'gr', I.inn], departure: ['DEPARTURE', 'r', I.out],
     trophy: ['TROPHY', 'g', I.cup], promotion: ['PROMOTION', 'g', I.up], giant: ['GIANT-KILLING', 'g', I.bolt], milestone: ['MILESTONE', 'b', I.flag],
     performance: ['PERFORMANCE', 'g', I.spark], debut: ['DEBUT', 'b', I.spark], record: ['RECORD', 'b', I.up], moment: ['MOMENT', '', I.spark],
+    award: ['AWARD', 'g', I.star.replace('class="ico" ', '')], sacked: ['SACKED', 'r', I.out], left: ['NEW JOB', 'b', I.brief], season: ['SEASON', '', I.flag],
+    relegation: ['RELEGATION', 'r', I.out], final: ['CUP FINAL', 'g', I.cup],
   };
-  const GROUP = { trophy: 'trophy', promotion: 'trophy', signing: 'transfer', loan: 'transfer', departure: 'transfer' };
+  const GROUP = { trophy: 'trophy', promotion: 'trophy', award: 'trophy', appointed: 'career', sacked: 'career', left: 'career' };
   let D = null, xiTab = 'season', sqTab = 'season', storyF = 'all';
   const vs = (club, m) => m.venue === 'A' ? `${esc(m.opp)} <span style="color:var(--mut)">v</span> ${esc(club)}` : `${esc(club)} <span style="color:var(--mut)">v</span> ${esc(m.opp)}`;
   const score = m => m.venue === 'A' ? `${m.ga}–${m.gf}` : `${m.gf}–${m.ga}`;
@@ -298,13 +310,29 @@ tr:last-child td{border-bottom:0}
       (d.game_date ? 'Read from the save every time the game saves. Friendlies never count.' : 'Results are entered live on stream.');
   }
   function renderStory() {
-    const ev = (D.story || []).filter(e => storyF === 'all' || (GROUP[e.kind] || 'milestone') === storyF || (storyF === 'milestone' && !GROUP[e.kind]));
-    if (!ev.length) { $('storyList').innerHTML = '<div class="empty">Nothing here yet.</div>'; return; }
-    const bySeason = [];
-    ev.slice().reverse().forEach(e => { let s = bySeason.find(x => x.s === e.season); if (!s) bySeason.push(s = { s: e.season, list: [] }); s.list.push(e); });
-    $('storyList').innerHTML = bySeason.map(g => `<div class="season-h">${esc(g.s || '')}</div>` + g.list.map((e, i) => { const k = KIND[e.kind] || KIND.moment; const d = dd(e.date);
-      return `<div class="ev k-${e.kind} ${i === g.list.length - 1 ? 'last' : ''}"><div class="when">${d ? `<b>${d.getUTCDate()}</b><span>${fmt(e.date, { month: 'short' }).toUpperCase()} ${d.getUTCFullYear()}</span>` : ''}</div><div class="rail"><div class="tile">${k[2]}</div></div><div class="body"><span class="pill ${k[1]}">${k[0]}</span><div class="t">${esc(e.title)}</div>${e.text ? `<div class="x">${esc(e.text)}</div>` : ''}</div></div>`; }).join('')).join('');
+    const ev = (D.story || []).filter(e => storyF === 'all' || GROUP[e.kind] === storyF);
+    const box = $('storyList');
+    $('storyCount').textContent = ev.length > 1 ? `${ev.length} moments, newest on the right` : '';
+    if (!ev.length) { box.innerHTML = '<div class="empty" style="flex:1">Nothing here yet.</div>'; navState(); return; }
+    let lastSeason = null;
+    box.innerHTML = ev.map((e, i) => { const k = KIND[e.kind] || KIND.moment; const d = dd(e.date); const newSeason = e.season && e.season !== lastSeason; lastSeason = e.season;
+      const latest = i === ev.length - 1 && ev.length > 1;
+      return `<div class="hc k-${e.kind}${latest ? ' latest' : ''}"><div class="when">${d ? `<b>${d.getUTCDate()}</b>${fmt(e.date, { month: 'short' }).toUpperCase()} ${d.getUTCFullYear()}` : ''}</div><div class="rail"><div class="tile">${k[2]}</div>${newSeason ? `<span class="sea">${esc(e.season)}</span>` : ''}</div><div class="body"><div class="pills"><span class="pill ${k[1]}">${k[0]}</span>${latest ? '<span class="pill b">LATEST</span>' : ''}</div><div class="t">${esc(e.title)}</div>${e.text ? `<div class="x">${esc(e.text)}</div>` : ''}</div></div>`; }).join('');
+    const sig = storyF + ':' + ev.length;                 // only jump to the newest when something new arrives
+    if (sig !== renderStory.sig) {
+      renderStory.sig = sig;
+      const go = () => { box.scrollTo({ left: box.scrollWidth, behavior: 'instant' }); navState(); };
+      requestAnimationFrame(go); setTimeout(go, 300); if (document.fonts) document.fonts.ready.then(go);
+    } else navState();
   }
+  function navState() {
+    const b = $('storyList'), max = b.scrollWidth - b.clientWidth - 4;
+    $('stPrev').disabled = b.scrollLeft <= 4; $('stNext').disabled = b.scrollLeft >= max;
+    $('stPrev').classList.toggle('hide', max <= 0); $('stNext').classList.toggle('hide', max <= 0);
+  }
+  $('storyList').addEventListener('scroll', () => navState(), { passive: true });
+  $('stPrev').onclick = () => $('storyList').scrollBy({ left: -336, behavior: 'smooth' });
+  $('stNext').onclick = () => $('storyList').scrollBy({ left: 336, behavior: 'smooth' });
   function renderChart() {
     const P = D.positions || [], box = $('posChart');
     $('posBox').classList.toggle('hide', P.length < 2);
@@ -351,7 +379,7 @@ tr:last-child td{border-bottom:0}
   tabs('sqTabs', s => { sqTab = s.t; renderSquad(); });
   tabs('storyTabs', s => { storyF = s.f; renderStory(); });
   function load() { fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(render).catch(() => {}); }
-  let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => D && renderChart(), 150); });
+  let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (D) { renderChart(); navState(); } }, 150); });
   load(); setInterval(load, 60000);
 })();
 </script>
